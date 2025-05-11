@@ -55,7 +55,7 @@ export default {
       default: false
     }
   },
-  setup(props, { emit }) {
+setup(props, { emit }) {
     const cartItems = ref([])
     const router = useRouter()
     
@@ -71,16 +71,14 @@ export default {
       emit('close')
     }
     
+    const checkout = () => {
+      router.push('/checkout')
+      close()
+    }
+    
     const remove = (id) => {
       cart.remove(id)
       updateCartItems()
-    }
-    
-    const checkout = () => {
-      alert('Замовлення оформлено (симуляція)')
-      cart.clear()
-      updateCartItems()
-      close()
     }
     
     const goToCart = () => {

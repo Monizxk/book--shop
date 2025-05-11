@@ -119,10 +119,8 @@ export default {
     }
     
     const checkout = () => {
-      alert('Замовлення оформлено (симуляція)')
-      cart.clear()
-      updateCartItems()
-      router.push('/')
+      router.push('/checkout')
+      close()
     }
     
     const decreaseQuantity = (item) => {
