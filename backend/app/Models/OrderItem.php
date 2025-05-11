@@ -1,0 +1,37 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class OrderItem extends Model
+{
+    protected $fillable = [
+        'order_id',
+        'product_id',
+        'product_name',
+        'price',
+        'quantity',
+        'discount',
+    ];
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class);
+    }
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
+        protected static function booted()
+    {
+        static::creating(function ($item) {
+            if ($item->product && !$item->product_name) {
+                $item->product_name = $item->product->title;
+            }
+        });
+    }
+
+}
+
