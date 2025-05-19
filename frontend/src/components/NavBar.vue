@@ -6,20 +6,30 @@
 
     <div class="nav-container">
       <div id="mobile">
-        <i id="bar" class="fas fa-bars" @click="toggleMobileMenu"></i>
+        <i class="fa-solid fa-bars" style="font-size: 24px; color: #088178;" @click="toggleMobileMenu"></i>
       </div>
+
 
       <!-- Navbar/Sidebar -->
       <ul id="navbar" :class="{ active: isMobileMenuOpen }">
         <div class="sidebar-header"></div>
-        <li><router-link :class="{ active: isCurrentRoute('/') }" to="/"><i class="fas fa-book-open"></i>Shop</router-link></li>
-        <li><router-link :class="{ active: isCurrentRoute('/favorites') }" to="/favorites"><i class="fas fa-heart"></i>Favorites</router-link></li>
+        <li><router-link :class="{ active: isCurrentRoute('/') }" to="/"><i class="fas fa-book-open"></i>Головна</router-link></li>
+        <li><router-link :class="{ active: isCurrentRoute('/category') }" to="/category "><i class="fas fa-heart"></i>Каталог</router-link></li>
+        <li><router-link :class="{ active: isCurrentRoute('/contact') }" to="/contact"><i class="fas fa-heart"></i>Контакти</router-link></li>
+        <li><router-link :class="{ active: isCurrentRoute('/delivery') }" to="/delivery"><i class="fas fa-heart"></i>Доставка</router-link></li>
+        <li><router-link :class="{ active: isCurrentRoute('/payment') }" to="/payment"><i class="fas fa-heart"></i>Оплата</router-link></li>
         <li>
           <a href="#" @click.prevent="toggleCartDrawer" :class="{ active: isCurrentRoute('/cart') }">
-            <i class="fas fa-shopping-cart"></i>Cart
+            <i class="fas fa-shopping-cart"></i>Корзина
             <span class="cart-count" v-if="cartCount > 0">{{ cartCount }}</span>
           </a>
         </li>
+        <!-- Усередині <ul id="navbar"> додай внизу -->
+        <li class="contact-nav">
+          <i class="fas fa-phone-alt"></i> +38 (098) 123-45-67<br />
+          <i class="fas fa-envelope"></i> info@bookstore.com
+        </li>
+
       </ul>
 
       <!-- Sidebar Overlay -->
@@ -96,5 +106,7 @@ export default {
 </script>
 
 <style>
-/* Стилі для вашого навбару залишаються без змін */
+
+
+
 </style>

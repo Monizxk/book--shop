@@ -97,6 +97,8 @@ export default {
   setup() {
     const cartItems = ref([])
     const router = useRouter()
+
+    const checkout = () => router.push('/checkout')
     
     const total = computed(() => {
       return cart.total
@@ -117,12 +119,6 @@ export default {
         updateCartItems()
       }
     }
-    
-    const checkout = () => {
-      router.push('/checkout')
-      close()
-    }
-    
     const decreaseQuantity = (item) => {
       if (item.quantity > 1) {
         cart.updateQuantity(item.id, item.quantity - 1)

@@ -1,25 +1,22 @@
 <template>
-  <v-container fluid class="my-5 main-container">
+  <div>
+  <v-container fluid class=" main-container">
     <v-row justify="center">
-      <v-col cols="12" class="top-spacer px-4 py-6">
-        <p class="text text-subtitle-1 text-center">
-          Тут ви можете знайти книги на будь-який смак. Оберіть категорію або перегляньте всі товари нижче.
-        </p>
+      <v-col cols="12" class="">
       </v-col>
     </v-row>
-
     <v-row justify="center">
       <v-col cols="12">
         <v-row>
           <v-col cols="12" sm="4" md="3" class="border category-container">
             <div class="pa-4 text-center">
               <h2 class="category-title">Категорії</h2>
-              <Tree 
-                :value="categoryTree" 
-                selectionMode="single"
-                @node-select="handleNodeSelect"
-                :expandedKeys="expandedKeys"
-                @node-toggle="handleNodeToggle"
+              <Tree
+                  :value="categoryTree"
+                  selectionMode="single"
+                  @node-select="handleNodeSelect"
+                  :expandedKeys="expandedKeys"
+                  @node-toggle="handleNodeToggle"
               />
             </div>
           </v-col>
@@ -35,29 +32,40 @@
               <p class="text text-subtitle-1" v-else>
                 Категорія: {{ selectedCategory.name }} <span v-if="filteredProducts.length">({{ filteredProducts.length }} товарів)</span>
               </p>
-              
+
               <v-breadcrumbs
-                :items="breadcrumbItems"
-                divider=">"
+                  :items="breadcrumbItems"
+                  divider=">"
               ></v-breadcrumbs>
             </div>
 
             <v-row>
-              <v-col 
-                v-for="(product, index) in filteredProducts" 
-                :key="index" 
-                cols="12" 
-                sm="6" 
-                md="4" 
-                lg="3" 
-                class="border product-container"
+              <v-col
+                  v-for="(product, index) in filteredProducts"
+                  :key="index"
+                  cols="12"
+                  sm="6"
+                  md="4"
+                  lg="3"
+                  class="book-product-container"
               >
-                <div class="product pa-4 text-center d-flex flex-column justify-center">
-                  <img :src="product.images[0]" alt="Зображення товару" />
-                  <h3 class="product-title">{{ product.title }}</h3>
-                  <p>{{ product.price }} ₴</p>
-                  <p class="product-description">{{ product.description }}</p>
-                  <button @click="addToCart(product)">Купити</button>
+                <div class="book-product">
+                  <div class="book-image">
+                    <img :src="getImageUrl(product.images[0])" alt="Зображення товару" class="book-cover" />
+                  </div>
+                  <div class="book-details">
+                    <h3 class="book-title">{{ product.title }}</h3>
+                    <div class="book-price-container">
+                      <p class="book-price">{{ product.price }} грн.</p>
+                      <span class="book-stock" v-if="product.in_stock !== false">
+                    <span class="check-icon">✓</span> В наявності
+                  </span>
+                      <span class="book-stock out-of-stock" v-else>
+                    Немає в наявності
+                  </span>
+                    </div>
+                    <button @click="addToCart(product)" class="buy-button">Купити</button>
+                  </div>
                 </div>
               </v-col>
               <v-col cols="12" v-if="filteredProducts.length === 0" class="text-center py-5">
@@ -69,16 +77,22 @@
       </v-col>
     </v-row>
   </v-container>
+  <Footer/>
+  </div>
 </template>
 
+
+
 <script>
+import Footer from "./Footer.vue";
 import Tree from 'primevue/tree';
 import { cart } from '../api/cart.js'
 
 
+
 export default {
   name: 'GridLayout',
-  components: { Tree },
+  components: { Tree, Footer },
 
   data() {
     return {
@@ -111,8 +125,8 @@ export default {
   methods: {
 
     getImageUrl(imagePath) {
-    if (!imagePath) return '';
-    return `http://localhost:8000/storage/${imagePath}`;
+      if (!imagePath) return '';
+      return `http://localhost:8000/storage/${imagePath}`;
     },
 
     addToCart(product) {
@@ -145,11 +159,11 @@ export default {
       return categories.map((cat, index) => {
         const currentKey = `${prefix}-${index}`;
         const currentPath = [...parentPath, cat.name];
-        
+
         return {
           key: currentKey,
           label: cat.name,
-          data: { 
+          data: {
             id: cat.id,
             name: cat.name,
             path: currentPath
@@ -163,7 +177,7 @@ export default {
       const categoryId = node.data.id;
       this.selectedCategory = node.data;
       this.filterProductsByCategory(categoryId);
-      
+
       // При виборі вузла також розгортаємо його
       if (node.children && node.children.length > 0) {
         this.expandedKeys[node.key] = true;
@@ -182,16 +196,16 @@ export default {
       } else {
         // Отримуємо список всіх ID категорій, включаючи підкатегорії
         const categoryIds = this.getCategoryWithChildrenIds(categoryId);
-        
+
         // Фільтруємо товари за всіма ID категорій
         this.filteredProducts = this.products.filter(p => categoryIds.includes(p.category_id));
       }
     },
-    
+
     // Рекурсивно збираємо ID всіх підкатегорій
     getCategoryWithChildrenIds(categoryId) {
       const ids = [categoryId];
-      
+
       const findChildrenIds = (categories) => {
         categories.forEach(category => {
           if (category.id === categoryId) {
@@ -203,11 +217,11 @@ export default {
           }
         });
       };
-      
+
       findChildrenIds(this.categories);
       return ids;
     },
-    
+
     collectChildrenIds(children, ids) {
       children.forEach(child => {
         ids.push(child.id);
@@ -222,11 +236,11 @@ export default {
         const pathItems = category.path.map((name, index, arr) => {
           return {
             title: name,
-            disabled: index === arr.length - 1, 
+            disabled: index === arr.length - 1,
             href: index === arr.length - 1 ? '' : `/catalog/${name.toLowerCase()}`
           };
         });
-        
+
         this.breadcrumbItems = [
           { title: 'Головна', disabled: false, href: '/' },
           { title: 'Каталог', disabled: false, href: '/catalog' },
@@ -256,6 +270,8 @@ export default {
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
+/* Keep your existing styles */
+
 .main-container,
 .main-container p,
 .main-container h1,
@@ -280,52 +296,282 @@ export default {
 }
 
 .main-container {
-  max-width: none;
-  width: 100%;
-  padding: 0 16px;
+
 }
 
 .category-container {
-  max-height: 500px;
+  position: fixed;
+  top: 90px;
+  left: 0;
+  width: 220px;
+  height: 100vh;
+  background-color: #f4f4f4;
+  border-right: 1px solid #ccc;
+  padding: 20px;
   overflow-y: auto;
-  margin-bottom: 16px;
+  z-index: 1000;
 }
 
 .category-title {
   font-size: clamp(1.5rem, 5vw, 1.75rem);
 }
 
-.product-container {
-  min-height: 250px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  margin-bottom: 16px;
-}
-
-.product-title {
-  font-size: clamp(1rem, 4vw, 1.25rem);
-  margin-bottom: 8px;
-}
-
-.product-description {
-  font-size: clamp(0.875rem, 3vw, 1rem);
-  margin-bottom: 12px;
-}
-
 .products-section {
-  padding-top: 16px;
+  position: relative;
+  left: auto;
+  right: auto;
+  bottom: auto;
+  top: auto;
+  overflow-y: visible;
+  padding: 16px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-sizing: border-box
 }
 
 .product-spacer {
-  background-color: #f9f9f9;
+  background-color: white;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   margin-bottom: 24px;
   padding: 16px;
 }
 
+/* --- Мобільна адаптація --- */
+@media (max-width: 768px) {
+  .main-container {
+    padding: 16px;
+  }
+  .category-container {
+    position: relative;
+    top: 50px;
+    left: 1rem;
+    width: 300px;
+    height: auto; /* Dynamic height based on content */
+    max-height: calc(100vh - 100px); /* Prevent overflow beyond viewport */
+    overflow-y: auto;
+    background-color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 1rem;
+    z-index: 10;
+  }
+
+  .products-section {
+    position: relative;
+    top: 50px !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: 100%;
+    height: auto;
+    overflow-y: visible;
+    padding: 12px;
+  }
+  .product-spacer {
+
+  }
+}
+
+/* New book product styling */
+
+.book-product-container {
+  margin-bottom: 20px;
+  padding: 0 10px;
+}
+
+.book-product {
+  border: 1px solid #e0e0e0 !important;
+  border-radius: 4px;
+  max-height: 450px;
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  transition: box-shadow 0.3s ease;
+  overflow: hidden;
+  max-width: 100%;
+  box-sizing: border-box;
+  width: 100%;
+  overflow-wrap: break-word;
+
+}
+
+.book-product:hover {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.book-image {
+  padding: 8px;
+  background-color: #f5f5f5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 200px;
+  height: 250px;
+  flex-shrink: 0;
+  overflow: hidden;
+  margin: 0 auto; /* центр по горизонталі, якщо блоку потрібно центруватись у контейнері */
+}
+
+.book-cover {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block; /* прибирає можливі нижні відступи */
+  margin: 0 auto; /* центр по горизонталі */
+}
+
+.book-details {
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.book-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 15px;
+  line-height: 1.3;
+  color: #333;
+  min-height: 42px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.book-price-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+  margin-bottom: 15px;
+}
+
+.book-price {
+  font-size: 20px;
+  font-weight: 700;
+  color: #e53935 !important;
+  margin: 0;
+}
+
+.book-stock {
+  font-size: 14px;
+  color: #43a047 !important;
+  display: flex;
+  align-items: center;
+}
+
+.check-icon {
+  color: #43a047 !important;
+  font-weight: bold;
+  margin-right: 5px;
+}
+
+.out-of-stock {
+  color: #e53935 !important;
+}
+
+.buy-button {
+  background-color: #1976d2;
+  color: white !important;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 15px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  transition: background-color 0.3s ease;
+  margin: 0; /* прибираємо margin */
+  box-sizing: border-box; /* враховує padding і border у ширину */
+}
+
+
+.buy-button:hover {
+  background-color: #1565c0;
+}
+
+/* Adjust grid layout for better book display */
+@media (min-width: 1264px) {
+  .book-product-container {
+    padding: 0 15px;
+    display: flex;
+    flex-wrap: wrap;      /* дозволяє карточкам переноситись */
+    gap: 15px;            /* відступ між карточками */
+    justify-content: flex-start; /* або center — залежно від дизайну */
+  }
+
+  .col-lg-3 {
+    flex: 0 0 25%;
+    max-width: 25%;
+    flex-basis: 25%;
+  }
+}
+
+/* Tablet view */
+@media (min-width: 601px) and (max-width: 1263px) {
+  .book-image {
+    height: 280px;
+  }
+
+  .book-cover {
+    max-height: 260px;
+  }
+}
+
+/* Mobile view */
 @media (max-width: 600px) {
+  .book-product {
+    flex-direction: row;
+    height: 180px; /* Increased height for mobile */
+  }
+
+  .book-image {
+    width: 45%;
+    height: 100%;
+    padding: 8px;
+    min-width: 130px;
+  }
+
+  .book-cover {
+    height: 100%;
+    max-height: 160px;
+    width: auto;
+  }
+
+  .book-details {
+    width: 55%;
+    padding: 12px;
+  }
+
+  .book-title {
+    font-size: 14px;
+    margin-bottom: 10px;
+    min-height: auto;
+  }
+
+  .book-price-container {
+    margin-bottom: 10px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .book-price {
+    margin-bottom: 4px;
+  }
+
+  .book-stock {
+    font-size: 12px;
+  }
+
+  .buy-button {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+
   .main-container {
     padding: 0 8px;
   }
@@ -339,12 +585,45 @@ export default {
     margin-bottom: 12px;
   }
 
-  .product-container {
-    min-height: 200px;
-  }
-
   .product-spacer {
     padding: 12px;
   }
 }
-</style>  
+
+@media (max-width: 600px) {
+  .book-product {
+    flex-direction: row;
+    height: auto;
+    min-height: 180px;
+    width: 100%;  /* Важливо */
+    box-sizing: border-box;
+  }
+
+  .book-details {
+    width: 55%;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-sizing: border-box;
+  }
+
+  .buy-button {
+    width: 100%;  /* повна ширина у межах контейнера */
+    padding: 8px 12px;
+    font-size: 14px;
+    margin: 0;
+    box-sizing: border-box;
+  }
+
+  .book-image {
+    width: 45%;
+    height: 100%;
+    padding: 8px;
+    min-width: 130px;
+    box-sizing: border-box;
+  }
+}
+
+
+</style>
