@@ -32,7 +32,7 @@ class ProductResource extends Resource
                 FileUpload::make('images')
                     ->label('Зображення')
                     ->multiple()
-                    ->disk('s3')
+                    ->disk('public')
                     ->directory('products')
                     ->image()
                     ->reorderable()

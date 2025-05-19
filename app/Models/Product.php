@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class Product extends Model
 {
@@ -22,16 +23,15 @@ class Product extends Model
     /**
      * Обробка отриманих зображень для правильного формування URL
      */
-    public function getImagesAttribute($value)
-    {
-        $images = json_decode($value, true);
-
-        return array_map(function ($image) {
-            // Перевірка, чи вже є 'products/' на початку шляху, щоб уникнути дублювання
-            $path = $image;
-            return Storage::disk('s3')->url($path);
-        }, $images);
-    }
+//    public function getImagesAttribute($value)
+//    {
+//        $images = json_decode($value, true);
+//
+//        return array_map(function ($image) {
+//            $path = $image;
+//            return Storage::disk('public')->url($path);
+//        }, $images);
+//    }
 
 
     public function orderItems()
@@ -44,7 +44,10 @@ class Product extends Model
      */
     public function getImageUrlAttribute(): ?string
     {
-        // Перевірка на наявність хоча б одного зображення
-        return isset($this->images[0]) ? Storage::disk('s3')->url('products/' . $this->images[0]) : null;
+        return isset($this->images[0])
+            ? (Str::startsWith($this->images[0], 'http')
+                ? $this->images[0]
+                : Storage::disk('public')->url($this->images[0]))
+            : null;
     }
 }
