@@ -88,7 +88,7 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue'
+import {ref, computed, onMounted, onUnmounted} from 'vue'
 import { useRouter } from 'vue-router'
 import { cart } from '../api/cart.js'
 
@@ -130,9 +130,17 @@ export default {
       cart.updateQuantity(item.id, item.quantity + 1)
       updateCartItems()
     }
+
     
     onMounted(() => {
       updateCartItems()
+      const Event = new CustomEvent("hideCategoryTree")
+      document.dispatchEvent(Event)
+    })
+
+    onUnmounted(() => {
+      const Event = new CustomEvent("showCategoryTree")
+      document.dispatchEvent(Event)
     })
     
     return {

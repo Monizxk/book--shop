@@ -95,6 +95,10 @@ setup(props, { emit }) {
     
     onMounted(() => {
       updateCartItems()
+
+      const Event = new CustomEvent("hideCategoryTree")
+      console.log(2332424)
+      document.dispatchEvent(Event)
     })
     
     return {

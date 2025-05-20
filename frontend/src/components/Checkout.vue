@@ -200,7 +200,7 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue'
+import {ref, computed, onMounted, onUnmounted} from 'vue'
 import { useRouter } from 'vue-router'
 import { cart } from '../api/cart.js'
 
@@ -340,12 +340,21 @@ export default {
     onMounted(() => {
       // Завантаження товарів з кошика
       cartItems.value = [...cart.items]
-      
+
+
+
       // Якщо кошик порожній, перенаправляємо на головну
       if (cartItems.value.length === 0) {
         alert('Ваш кошик порожній')
         router.push('/')
       }
+      const Event = new CustomEvent("hideCategoryTree")
+      document.dispatchEvent(Event)
+    })
+
+    onUnmounted(() => {
+      const Event = new CustomEvent("showCategoryTree")
+      document.dispatchEvent(Event)
     })
     
     return {

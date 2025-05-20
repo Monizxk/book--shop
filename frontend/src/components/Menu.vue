@@ -1,83 +1,56 @@
 <template>
   <div>
-  <v-container fluid class=" main-container">
-    <v-row justify="center">
-      <v-col cols="12" class="">
+    <!-- Товари -->
+    <div class="product-spacer px-4 py-5">
+      <h2 class="mb-2">Наші товари</h2>
+
+      <p class="text text-subtitle-1" v-if="!selectedCategory">
+        Тут ви знайдете великий вибір книг з різних категорій. Оберіть те, що вам до вподоби!
+      </p>
+      <p class="text text-subtitle-1" v-else>
+        Категорія: {{ selectedCategory.name }} <span v-if="filteredProducts.length">({{ filteredProducts.length }} товарів)</span>
+      </p>
+
+      <v-breadcrumbs
+          :items="breadcrumbItems"
+          divider=">"
+      ></v-breadcrumbs>
+    </div>
+
+    <v-row>
+      <v-col
+          v-for="(product, index) in filteredProducts"
+          :key="index"
+          cols="12"
+          sm="6"
+          md="4"
+          lg="3"
+          class="book-product-container"
+      >
+        <div class="book-product">
+          <div class="book-image">
+            <img :src="getImageUrl(product.images[0])" alt="Зображення товару" class="book-cover" />
+          </div>
+          <div class="book-details">
+            <h3 class="book-title">{{ product.title }}</h3>
+            <div class="book-price-container">
+              <p class="book-price">{{ product.price }} грн.</p>
+              <span class="book-stock" v-if="product.in_stock !== false">
+              <span class="check-icon">✓</span> В наявності
+            </span>
+              <span class="book-stock out-of-stock" v-else>
+              Немає в наявності
+            </span>
+            </div>
+            <button @click="addToCart(product)" class="buy-button">Купити</button>
+          </div>
+        </div>
+      </v-col>
+      <v-col cols="12" v-if="filteredProducts.length === 0" class="text-center py-5">
+        <p>У цій категорії немає товарів</p>
       </v-col>
     </v-row>
-    <v-row justify="center">
-      <v-col cols="12">
-        <v-row>
-          <v-col cols="12" sm="4" md="3" class="border category-container">
-            <div class="pa-4 text-center">
-              <h2 class="category-title">Категорії</h2>
-              <Tree
-                  :value="categoryTree"
-                  selectionMode="single"
-                  @node-select="handleNodeSelect"
-                  :expandedKeys="expandedKeys"
-                  @node-toggle="handleNodeToggle"
-              />
-            </div>
-          </v-col>
-
-          <!-- Товари -->
-          <v-col cols="12" sm="8" md="9" class="products-section">
-            <div class="product-spacer px-4 py-5">
-              <h2 class="mb-2">Наші товари</h2>
-
-              <p class="text text-subtitle-1" v-if="!selectedCategory">
-                Тут ви знайдете великий вибір книг з різних категорій. Оберіть те, що вам до вподоби!
-              </p>
-              <p class="text text-subtitle-1" v-else>
-                Категорія: {{ selectedCategory.name }} <span v-if="filteredProducts.length">({{ filteredProducts.length }} товарів)</span>
-              </p>
-
-              <v-breadcrumbs
-                  :items="breadcrumbItems"
-                  divider=">"
-              ></v-breadcrumbs>
-            </div>
-
-            <v-row>
-              <v-col
-                  v-for="(product, index) in filteredProducts"
-                  :key="index"
-                  cols="12"
-                  sm="6"
-                  md="4"
-                  lg="3"
-                  class="book-product-container"
-              >
-                <div class="book-product">
-                  <div class="book-image">
-                    <img :src="getImageUrl(product.images[0])" alt="Зображення товару" class="book-cover" />
-                  </div>
-                  <div class="book-details">
-                    <h3 class="book-title">{{ product.title }}</h3>
-                    <div class="book-price-container">
-                      <p class="book-price">{{ product.price }} грн.</p>
-                      <span class="book-stock" v-if="product.in_stock !== false">
-                    <span class="check-icon">✓</span> В наявності
-                  </span>
-                      <span class="book-stock out-of-stock" v-else>
-                    Немає в наявності
-                  </span>
-                    </div>
-                    <button @click="addToCart(product)" class="buy-button">Купити</button>
-                  </div>
-                </div>
-              </v-col>
-              <v-col cols="12" v-if="filteredProducts.length === 0" class="text-center py-5">
-                <p>У цій категорії немає товарів</p>
-              </v-col>
-            </v-row>
-          </v-col>
-        </v-row>
-      </v-col>
-    </v-row>
-  </v-container>
-  <Footer/>
+    <Footer/>
   </div>
 </template>
 
@@ -171,35 +144,6 @@ export default {
           children: cat.children ? this.convertCategoriesToTreeData(cat.children, currentKey, currentPath) : []
         };
       });
-    },
-
-    handleNodeSelect(node) {
-      const categoryId = node.data.id;
-      this.selectedCategory = node.data;
-      this.filterProductsByCategory(categoryId);
-
-      // При виборі вузла також розгортаємо його
-      if (node.children && node.children.length > 0) {
-        this.expandedKeys[node.key] = true;
-      }
-    },
-
-    handleNodeToggle(node) {
-      // Обробка розгортання/згортання вузлів
-      this.expandedKeys[node.key] = !this.expandedKeys[node.key];
-    },
-
-    filterProductsByCategory(categoryId) {
-      if (!categoryId) {
-        // Якщо категорія не вибрана, показуємо всі товари
-        this.filteredProducts = this.products;
-      } else {
-        // Отримуємо список всіх ID категорій, включаючи підкатегорії
-        const categoryIds = this.getCategoryWithChildrenIds(categoryId);
-
-        // Фільтруємо товари за всіма ID категорій
-        this.filteredProducts = this.products.filter(p => categoryIds.includes(p.category_id));
-      }
     },
 
     // Рекурсивно збираємо ID всіх підкатегорій
