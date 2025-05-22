@@ -17,5 +17,10 @@ class ProductController extends Controller
     {
         return Product::findOrFail($id); // Повертаємо продукт за його ID
     }
+    public function sale()
+    {
+        $products = Product::where('is_on_sale', true)->get();
+        return response()->json($products);
+    }
 }
 

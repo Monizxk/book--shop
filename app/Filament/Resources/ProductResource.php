@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use Filament\Forms;
+use Filament\Forms\Components\Checkbox;
 use Filament\Tables;
 use Filament\Resources\Resource;
 use Filament\Forms\Form;
@@ -55,6 +56,12 @@ class ProductResource extends Resource
                     ->searchable()
                     ->preload()
                     ->required(),
+
+                Checkbox::make('is_on_sale')
+                    ->label('Розпродаж')
+                    ->default(false),
+
+
             ]);
     }
 
