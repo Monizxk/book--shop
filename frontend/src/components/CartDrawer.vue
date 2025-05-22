@@ -162,6 +162,8 @@ setup(props, { emit }) {
 }
 
 .close-btn {
+  top: 2px;
+  right: 2px;
   background: none;
   border: none;
   font-size: 1.5rem;
