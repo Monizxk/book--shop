@@ -14,7 +14,7 @@
       <ul id="navbar" :class="{ active: isMobileMenuOpen }">
         <div class="sidebar-header"></div>
         <li><router-link :class="{ active: isCurrentRoute('/') }" to="/"><i class="fas fa-book-open"></i>Головна</router-link></li>
-        <li><router-link :class="{ active: isCurrentRoute('/category') }" to="/category "><i class="fas fa-heart"></i>Каталог</router-link></li>
+        <li><router-link :class="{ active: isCurrentRoute('/category') }" to="/category"><i class="fas fa-heart"></i>Каталог</router-link></li>
         <li><router-link :class="{ active: isCurrentRoute('/contact') }" to="/contact"><i class="fas fa-heart"></i>Контакти</router-link></li>
         <li><router-link :class="{ active: isCurrentRoute('/delivery') }" to="/delivery"><i class="fas fa-heart"></i>Доставка</router-link></li>
         <li><router-link :class="{ active: isCurrentRoute('/payment') }" to="/payment"><i class="fas fa-heart"></i>Оплата</router-link></li>

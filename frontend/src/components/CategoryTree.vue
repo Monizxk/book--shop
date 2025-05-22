@@ -1,13 +1,13 @@
 <template>
-  <v-container v-show="showCategoryTree" :style="{ maxWidth: '300px'}">
+  <v-container class="category-container" v-show="showCategoryTree" :style="{ maxWidth: '300px'}">
     <div class="pa-4 text-center">
       <h2 class="category-title">Категорії</h2>
       <Tree
           :value="categoryTree"
           selectionMode="single"
-          @node-select="handleNodeSelect"
           :expandedKeys="expandedKeys"
           @node-toggle="handleNodeToggle"
+          @node-select="handleNodeSelect"
       />
     </div>
   </v-container>
@@ -19,6 +19,7 @@ import Tree from 'primevue/tree';
 
 
 const emit = defineEmits(['select-category'])
+
 
 const isExpanded = ref(false)
 const isSelected = ref(false)
@@ -149,8 +150,6 @@ onMounted(() => {
   left: 0;
   width: 620px;
   height: 100vh;
-  background-color: #f4f4f4;
-  border-right: 1px solid #ccc;
   padding: 20px;
   overflow-y: auto;
   z-index: 1000;
