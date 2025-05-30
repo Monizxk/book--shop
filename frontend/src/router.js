@@ -19,6 +19,12 @@ const routes = [
   { path: '/delivery', component: Delivery },
   { path: '/contact', component: Contact },
   { path: '/payment', component: Payment },
+  {
+    path: '/search',
+    name: 'SearchResults',
+    component: () => import('../src/components/SearchResults.vue')
+  }
+
 ]
 
 const router = createRouter({

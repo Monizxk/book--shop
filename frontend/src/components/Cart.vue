@@ -157,15 +157,31 @@ export default {
 </script>
 
 <style scoped>
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+
 .cart-page {
-  padding: 30px 0;
-  color: black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
+  box-sizing: border-box;
+
 }
 
 .container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
+  max-width: 1200px; /* або інша бажана ширина */
+  width: 100%;
+  margin: 0 auto; /* горизонтальне центрування */
+  padding: 0 15px; /* відступи для адаптивності */
 }
 
 h1 {
@@ -199,6 +215,7 @@ h1 {
   text-decoration: none;
   border-radius: 4px;
   font-weight: 500;
+  height: 50px;
 }
 
 .cart-content {
@@ -208,7 +225,6 @@ h1 {
 }
 
 .cart-header {
-  display: grid;
   grid-template-columns: 3fr 1fr 1fr 1fr 50px;
   padding: 15px 0;
   border-bottom: 1px solid #eee;
@@ -288,6 +304,7 @@ h1 {
   color: #ff5252;
   cursor: pointer;
   padding: 8px;
+
 }
 
 .cart-summary {
@@ -310,6 +327,7 @@ h1 {
   border-radius: 4px;
   cursor: pointer;
   font-weight: 500;
+  height: 50px;
 }
 
 .cart-totals {

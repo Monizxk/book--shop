@@ -4,10 +4,21 @@
       <router-link to="/"><i class="fas fa-book"></i>Bookstore</router-link>
     </div>
 
+    <input
+        v-model="searchQuery"
+        @input="handleSearch"
+        @keyup.enter="handleSearch"
+        type="text"
+        placeholder="Пошук книг..."
+        class="search-input"
+    />
+
     <div class="nav-container">
       <div id="mobile">
         <i class="fa-solid fa-bars" style="font-size: 24px; color: #088178;" @click="toggleMobileMenu"></i>
       </div>
+
+
 
 
       <!-- Navbar/Sidebar -->
@@ -47,16 +58,27 @@ import { useRouter, useRoute } from 'vue-router'
 import { cart } from '../api/cart.js'
 import CartDrawer from './CartDrawer.vue'
 
+const searchQuery = ref('')
+const router = useRouter()
+
+
 export default {
   name: 'NavBar',
   components: {
     CartDrawer
   },
   setup() {
+    const searchQuery = ref('')
     const isMobileMenuOpen = ref(false)
     const isCartOpen = ref(false)
     const router = useRouter()
     const route = useRoute()
+
+    function handleSearch() {
+      if (searchQuery.value.trim() !== '') {
+        router.push({ name: 'SearchResults', query: { q: searchQuery.value } })
+      }
+    }
 
     const toggleMobileMenu = () => {
       isMobileMenuOpen.value = !isMobileMenuOpen.value
@@ -64,6 +86,10 @@ export default {
       if (isMobileMenuOpen.value && isCartOpen.value) {
         isCartOpen.value = false
       }
+    }
+
+    function handleSearch() {
+      router.push({ name: 'SearchResults', query: { q: searchQuery.value } })
     }
     
     const isCurrentRoute = (path) => {
@@ -93,12 +119,14 @@ export default {
     })
 
     return {
+      searchQuery,
       isMobileMenuOpen,
       isCartOpen,
       cartCount,
       toggleMobileMenu,
       isCurrentRoute,
       toggleCartDrawer,
+      handleSearch,
       closeCartDrawer
     }
   }
@@ -107,4 +135,9 @@ export default {
 
 <style>
 
+.search-input {
+  padding: 5px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
 </style>

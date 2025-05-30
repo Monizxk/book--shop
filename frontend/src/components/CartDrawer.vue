@@ -92,13 +92,13 @@ setup(props, { emit }) {
         updateCartItems()
       }
     })
-    
-    onMounted(() => {
-      updateCartItems()
 
-      const Event = new CustomEvent("hideCategoryTree")
-      console.log(2332424)
-      document.dispatchEvent(Event)
+    onMounted(() => {
+      const hideCategoryEvent = new CustomEvent("hideCategoryTree")
+      const hideTimeEvent = new CustomEvent("hideTimeContainer")
+
+      document.dispatchEvent(hideCategoryEvent)
+      document.dispatchEvent(hideTimeEvent)
     })
     
     return {
@@ -114,6 +114,8 @@ setup(props, { emit }) {
 </script>
 
 <style scoped>
+
+
 .cart-drawer {
   position: fixed;
   top: 0;
