@@ -22,5 +22,9 @@ class ProductController extends Controller
         $products = Product::where('is_on_sale', true)->get();
         return response()->json($products);
     }
+    public function wayProducts()
+    {
+        return Product::where('is_on_way', true)->get();
+    }
 }
 

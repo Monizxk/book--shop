@@ -61,7 +61,9 @@ class ProductResource extends Resource
                     ->label('Розпродаж')
                     ->default(false),
 
-
+                Checkbox::make('is_on_way')
+                    ->label('Готові до відправки')
+                    ->default(false),
             ]);
     }
 
@@ -74,6 +76,7 @@ class ProductResource extends Resource
                 TextColumn::make('price')->label('Ціна')->sortable(),
                 ToggleColumn::make('in_stock')->label('В наявності'),
                 TextColumn::make('category.name')->label('Категорія')->sortable(),
+                ToggleColumn::make('is_on_way')->label('Готові до відправки'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

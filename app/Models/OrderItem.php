@@ -2,36 +2,39 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class OrderItem extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'order_id',
         'product_id',
-        'product_name',
-        'price',
         'quantity',
-        'discount',
+        'price',
+        'product_name', // Добавлено поле product_name
     ];
 
+    protected $casts = [
+        'quantity' => 'integer',
+        'price' => 'decimal:2',
+    ];
+
+    /**
+     * Get the order that owns the order item.
+     */
     public function order()
     {
         return $this->belongsTo(Order::class);
     }
 
+    /**
+     * Get the product that belongs to the order item.
+     */
     public function product()
     {
         return $this->belongsTo(Product::class);
     }
-        protected static function booted()
-    {
-        static::creating(function ($item) {
-            if ($item->product && !$item->product_name) {
-                $item->product_name = $item->product->title;
-            }
-        });
-    }
-
 }
-

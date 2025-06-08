@@ -8,31 +8,18 @@ use Illuminate\Support\Str;
 
 class Product extends Model
 {
-    protected $fillable = ['title', 'images', 'price', 'is_on_sale', 'in_stock', 'category_id'];
+    protected $fillable = ['title', 'images', 'price', 'is_on_sale', 'in_stock', 'category_id', 'is_on_way'];
 
     protected $casts = [
         'images' => 'array',
         'in_stock' => 'boolean',
+        'is_on_way' => 'boolean'
     ];
 
     public function category()
     {
         return $this->belongsTo(Category::class);
     }
-
-    /**
-     * Обробка отриманих зображень для правильного формування URL
-     */
-//    public function getImagesAttribute($value)
-//    {
-//        $images = json_decode($value, true);
-//
-//        return array_map(function ($image) {
-//            $path = $image;
-//            return Storage::disk('public')->url($path);
-//        }, $images);
-//    }
-
 
     public function orderItems()
     {
