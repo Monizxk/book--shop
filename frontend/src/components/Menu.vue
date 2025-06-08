@@ -12,6 +12,7 @@
     <v-breadcrumbs
         :items="breadcrumbItems"
         divider=">"
+        class="mobile-hidden"
     ></v-breadcrumbs>
 
   <v-row>
@@ -47,6 +48,44 @@
       <p>У розпродажі немає товарів</p>
     </v-col>
   </v-row>
+
+      <div class="product-spacer px-4 py-5">
+    <h2 class="mb-2">Готові до відправки</h2>
+
+  <v-row>
+    <v-col
+        v-for="(product, index) in filteredWayProducts"
+        :key="index"
+        cols="12"
+        sm="6"
+        md="4"
+        lg="3"
+        class="book-product-container"
+    >
+      <div class="book-product">
+        <div class="book-image">
+          <img :src="getImageUrl(product.images[0])" alt="Зображення товару" class="book-cover" />
+        </div>
+        <div class="book-details">
+          <h3 class="book-title">{{ product.title }}</h3>
+          <div class="book-price-container">
+            <p class="book-price">{{ product.price }} грн.</p>
+            <span class="book-stock" v-if="product.in_stock !== false">
+              <span class="check-icon">✓</span> В наявності
+            </span>
+            <span class="book-stock out-of-stock" v-else>
+              Немає в наявності
+            </span>
+          </div>
+          <button @click="addToCart(product)" class="buy-button">Купити</button>
+        </div>
+      </div>
+    </v-col>
+    <v-col cols="12" v-if="filteredWayProducts.length === 0" class="text-center py-5">
+      <p>У відправці немає товарів</p>
+    </v-col>
+  </v-row>
+      </div>
   <Footer/>
   </div>
 </template>
@@ -63,6 +102,8 @@ import CategoryTree from "./CategoryTree.vue"
 
 const props = defineProps(['selectedCategory', 'categoryId'])
 
+const wayProducts = ref([]);
+const filteredWayProducts = ref([]);
 const saleProducts = ref([])
 const categories = ref([])
 const categoryTree = ref([])
@@ -119,6 +160,21 @@ async function fetchCategories() {
     console.error('Помилка при завантаженні категорій:', error)
   }
 }
+
+async function fetchWayProducts() {
+  try {
+    const response = await fetch('http://localhost:8000/api/products/way');
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    wayProducts.value = data;
+    filteredWayProducts.value = data;
+  } catch (error) {
+    console.error('Помилка при завантаженні:', error);
+  }
+}
+
 
 function convertCategoriesToTreeData(categories, prefix = '0', parentPath = []) {
   return categories.map((cat, index) => {
@@ -202,6 +258,7 @@ function filterSaleProductsByCategory(category) {
 onMounted(async () => {
   await fetchCategories()
   await fetchSaleProducts()
+  await fetchWayProducts()
 })
 </script>
 <style>
@@ -309,6 +366,7 @@ onMounted(async () => {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+  text-align: left;
 }
 
 .book-price-container {
@@ -362,6 +420,8 @@ onMounted(async () => {
 .buy-button:hover {
   background-color: #330050;
 }
+
+
 /* Адаптивна сітка для різних розмірів екрану */
 @media (max-width: 1264px) {
   .product-spacer {
@@ -397,6 +457,12 @@ onMounted(async () => {
 
   .product-spacer h2 {
     font-size: 2.25rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .mobile-hidden {
+    display: none !important;
   }
 }
 

@@ -8,6 +8,7 @@ import Category from './components/Category.vue'
 import Delivery from "./components/Delivery.vue";
 import Contact from "./components/Contact.vue";
 import Payment from "./components/Payment.vue";
+import OrderConfirm from "./components/OrderConfirm.vue";
 
 
 const routes = [
@@ -23,6 +24,11 @@ const routes = [
     path: '/search',
     name: 'SearchResults',
     component: () => import('../src/components/SearchResults.vue')
+  },
+  {
+    path: '/order-confirmation',
+    name: 'OrderConfirm',
+    component: OrderConfirm
   }
 
 ]

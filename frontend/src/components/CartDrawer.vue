@@ -14,7 +14,7 @@
       <div v-else class="cart-items">
         <div v-for="item in cartItems" :key="item.id" class="cart-item">
           <div class="item-image">
-            <img :src="item.images ? item.images[0] : ''" alt="Товар" />
+            <img :src="getImageUrl(item.images?.[0])" alt="Товар" />
           </div>
           <div class="item-details">
             <div class="item-title">{{ item.title }}</div>
@@ -85,6 +85,11 @@ setup(props, { emit }) {
       router.push('/cart')
       close()
     }
+
+  function getImageUrl(imagePath) {
+    if (!imagePath) return ''
+    return `http://localhost:8000/storage/${imagePath}`
+  }
     
     // Оновлюємо список товарів при відкритті кошика
     watch(() => props.isOpen, (newVal) => {
@@ -107,7 +112,8 @@ setup(props, { emit }) {
       close,
       remove,
       checkout,
-      goToCart
+      goToCart,
+      getImageUrl,
     }
   }
 }

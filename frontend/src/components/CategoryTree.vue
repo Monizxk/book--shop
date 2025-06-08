@@ -149,6 +149,8 @@ const updateBreadcrumbs = (category) => {
 const showCategoryTree = ref(true);
 
 onMounted(() => {
+  fetchCategories()
+
   document.addEventListener("hideCategoryTree", () => {
     showCategoryTree.value = false
   })

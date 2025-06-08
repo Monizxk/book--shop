@@ -14,6 +14,7 @@
       <v-breadcrumbs
           :items="breadcrumbItems"
           divider=">"
+          class="mobile-hidden"
       ></v-breadcrumbs>
     </div>
 
@@ -311,6 +312,7 @@ onMounted(() => {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+  text-align: left;
 }
 
 .book-price-container {
@@ -438,6 +440,12 @@ onMounted(() => {
   }
 }
 
+@media (max-width: 600px) {
+  .mobile-hidden {
+    display: none !important;
+  }
+}
+
 @media (min-width: 600px) and (max-width: 959px) {
   .product-spacer {
     width: 500px;
@@ -460,6 +468,7 @@ onMounted(() => {
 
   .book-title {
     font-size: 1.1rem;
+
   }
 
   .book-price {

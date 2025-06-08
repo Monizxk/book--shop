@@ -26,7 +26,7 @@
           <div v-for="item in cartItems" :key="item.id" class="cart-item">
             <div class="product-col">
               <div class="product-image">
-                <img :src="item.images ? item.images[0] : ''" alt="Товар" />
+                <img :src="getImageUrl(item.images?.[0])" alt="Товар" />
               </div>
               <div class="product-details">
                 <div class="product-title">{{ item.title }}</div>
@@ -99,10 +99,15 @@ export default {
     const router = useRouter()
 
     const checkout = () => router.push('/checkout')
-    
+
     const total = computed(() => {
-      return cart.total
+      return cartItems.value.reduce((sum, item) => sum + item.price * item.quantity, 0)
     })
+
+    function getImageUrl(imagePath) {
+      if (!imagePath) return ''
+      return `http://localhost:8000/storage/${imagePath}`
+    }
     
     const updateCartItems = () => {
       cartItems.value = [...cart.items]
@@ -125,7 +130,7 @@ export default {
         updateCartItems()
       }
     }
-    
+
     const increaseQuantity = (item) => {
       cart.updateQuantity(item.id, item.quantity + 1)
       updateCartItems()
@@ -150,7 +155,8 @@ export default {
       clearCart,
       checkout,
       decreaseQuantity,
-      increaseQuantity
+      increaseQuantity,
+      getImageUrl,
     }
   }
 }

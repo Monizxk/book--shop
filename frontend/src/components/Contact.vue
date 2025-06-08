@@ -314,6 +314,7 @@ onMounted(() => {
 }
 
 
+
 .contact-info p {
   font-size: 1.1rem;
   color: #000000;

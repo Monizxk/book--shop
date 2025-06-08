@@ -304,46 +304,69 @@ export default {
       
       return isValid
     }
-    
+    console.log('form', form.value)
+
     const submitOrder = async () => {
       if (!validateForm()) {
-        // Прокрутити до першої помилки
         const firstErrorElement = document.querySelector('.error-message')
         if (firstErrorElement) {
           firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
         }
         return
       }
-      
+
       isSubmitting.value = true
-      
+
       try {
-        // Тут буде відправка замовлення на сервер
-        // Імітуємо відправку замовлення
-        await new Promise(resolve => setTimeout(resolve, 1500))
-        
-        // Успішне завершення замовлення
-        alert('Замовлення успішно оформлено!')
-        
-        // Очищення кошика
+        const payload = {
+          full_name: form.value.fullName,
+          email: form.value.email,
+          phone: form.value.phone,
+          delivery_method: form.value.deliveryMethod,
+          city: form.value.city,
+          post_office: form.value.postOffice,
+          payment_method: form.value.paymentMethod,
+          comment: form.value.comment,
+          total: total.value,
+          items: cartItems.value.map(item => ({
+            product_id: item.id,
+            quantity: item.quantity,
+            price: item.price
+          }))
+        }
+
+        const response = await fetch('http://localhost:8000/api/orders', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        })
+
+        if (!response.ok) throw new Error('Server error')
+
+        const data = await response.json()
+        localStorage.setItem(
+            'lastOrderData',
+            JSON.stringify({
+              customerInfo: payload.customerInfo, 
+              orderItems: cart.items,
+              orderDate: new Date().toISOString()
+            })
+        )
         cart.clear()
-        
-        // Перенаправлення на сторінку підтвердження
-        router.push('/order-confirmation')
+        await router.push('/order-confirmation')
       } catch (error) {
         alert('Помилка при оформленні замовлення. Спробуйте ще раз.')
       } finally {
         isSubmitting.value = false
       }
     }
-    
+
+
     onMounted(() => {
-      // Завантаження товарів з кошика
       cartItems.value = [...cart.items]
 
-
-
-      // Якщо кошик порожній, перенаправляємо на головну
       if (cartItems.value.length === 0) {
         alert('Ваш кошик порожній')
         router.push('/')
@@ -373,7 +396,7 @@ export default {
 
 <style scoped>
 .checkout-container {
-  max-width: 1200px;
+  max-width: 2000px;
   margin: 0 auto;
   padding: 24px 16px;
 }
@@ -387,14 +410,19 @@ export default {
 
 .checkout-grid {
   display: grid;
-  grid-template-columns: 1fr 380px;
+  grid-template-columns: 2fr 1.2fr;
   gap: 32px;
 }
+
 
 .checkout-form-container, .order-summary-container {
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.order-summary-container {
+  width: 350px;
 }
 
 .checkout-form {

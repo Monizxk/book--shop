@@ -139,5 +139,7 @@ export default {
   padding: 5px;
   border-radius: 4px;
   border: 1px solid #ccc;
+  margin: 5px;
 }
+
 </style>
