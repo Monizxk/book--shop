@@ -381,7 +381,8 @@ export default {
                 paymentMethod: form.value.paymentMethod,
                 comment: form.value.comment
               },
-              orderItems: cartItems.value
+              orderItems: cartItems.value,
+              deliveryCost: form.value.deliveryMethod === 'selfPickup' ? null : deliveryCost.value,
             })
         )
         cart.clear()

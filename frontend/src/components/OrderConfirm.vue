@@ -144,7 +144,7 @@ export default {
     const router = useRouter()
     const lastOrder = ref(null)
     const settings = ref({});
-    const deliveryCostFromAPI = ref(60)
+    const deliveryCostFromAPI = ref(null)
 
     // Дані замовлення (можуть передаватися через route params або localStorage)
     const orderNumber = ref('')
@@ -176,8 +176,6 @@ export default {
     const subtotal = computed(() => {
       return orderItems.value.reduce((sum, item) => sum + (item.price * item.quantity), 0)
     })
-
-// Option 1: Using fetch (if you prefer to remove axios dependency)
     const loadDeliveryCost = async () => {
       try {
         const response = await fetch('http://localhost:8000/api/settings/delivery-cost')
@@ -186,27 +184,27 @@ export default {
           throw new Error(`HTTP error! status: ${response.status}`)
         }
 
-        const data = await response.json() // This works with fetch
-        console.log('Response data:', data)
+        const data = await response.json()
 
         deliveryCostFromAPI.value = data.delivery_cost
 
-        console.log('Delivery cost loaded:', deliveryCostFromAPI.value)
       } catch (error) {
-        console.error('Error loading delivery cost:', error)
-        // Keep default value (60)
       }
     }
 
     const deliveryCost = computed(() => {
-      if (customerInfo.value.deliveryMethod === 'selfPickup') {
-        return 0
-      }
+
+      // if (customerInfo.value.deliveryMethod === 'selfPickup') {
+      //   console.log('Returning 0 for selfPickup')
+      //   return 0
+      // }
+
       return deliveryCostFromAPI.value
     })
 
     const total = computed(() => {
-      return subtotal.value + deliveryCost.value
+      const result = subtotal.value + deliveryCost.value
+      return result
     })
 
     // Методи
@@ -232,12 +230,6 @@ export default {
       return `http://localhost:8000/storage/${imagePath}`
     }
 
-    // const generateOrderNumber = () => {
-    //   const timestamp = Date.now().toString().slice(-6)
-    //   const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0')
-    //   return `${timestamp}${random}`
-    // }
-
     const printOrder = () => {
       window.print()
     }
@@ -250,15 +242,15 @@ export default {
       if (savedOrderData) {
         orderData = JSON.parse(savedOrderData)
         customerInfo.value = orderData.customerInfo || {}
-        orderItems.value = orderData.orderItems || []
+        orderItems.value = orderData.orderItems || orderData.cartItems || []
         orderDate.value = new Date(orderData.orderDate || Date.now())
 
-        localStorage.removeItem('lastOrderData')
+        // localStorage.removeItem('lastOrderData')
       } else if (route.query.orderData) {
         try {
           orderData = JSON.parse(decodeURIComponent(route.query.orderData))
           customerInfo.value = orderData.customerInfo || {}
-          orderItems.value = orderData.orderItems || []
+          orderItems.value = orderData.orderItems || orderData.cartItems || []
           orderDate.value = new Date(orderData.orderDate || Date.now())
         } catch (error) {
           console.error('Помилка при парсингу даних замовлення:', error)
@@ -273,14 +265,17 @@ export default {
     }
 
     onMounted(async () => {
-      const res = await axios.get('http://localhost:8000/api/settings');
-      settings.value = res.data;
-    });
 
+      try {
+        const res = await axios.get('http://localhost:8000/api/settings');
+        settings.value = res.data;
+      } catch (error) {
+        console.error('Error loading settings:', error);
+      }
 
-    onMounted(() => {
       loadOrderData()
-      loadDeliveryCost()
+
+      await loadDeliveryCost()
 
       const event = new CustomEvent("hideCategoryTree")
       document.dispatchEvent(event)
@@ -289,7 +284,6 @@ export default {
       if (savedOrder) {
         lastOrder.value = JSON.parse(savedOrder)
       }
-
     })
 
     onUnmounted(() => {
