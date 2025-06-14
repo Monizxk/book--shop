@@ -17,6 +17,14 @@ class OrderController extends Controller
     {
         try {
             $orders = Order::with('items.product')->orderBy('created_at', 'desc')->get();
+            
+            // Add formatted totals
+            $orders = $orders->map(function ($order) {
+                $order->formatted_total = number_format($order->total, 2) . ' ₴';
+                $order->formatted_subtotal = number_format($order->subtotal, 2) . ' ₴';
+                $order->formatted_delivery_cost = number_format($order->delivery_cost, 2) . ' ₴';
+                return $order;
+            });
 
             return response()->json([
                 'success' => true,
@@ -55,17 +63,17 @@ class OrderController extends Controller
                 'items.*.product_id' => 'required|exists:products,id',
                 'items.*.quantity' => 'required|integer|min:1',
                 'items.*.price' => 'required|numeric|min:0',
-                'items.*.name' => 'nullable|string|max:255', // Добавил max длину
+                'items.*.name' => 'nullable|string|max:255',
             ]);
 
-            // Создаем заказ без items в fillable
+            // Create order without items in fillable
             $orderData = $validated;
-            unset($orderData['items']); // Убираем items из данных для создания заказа
+            unset($orderData['items']);
 
             $order = new Order();
             $order->fill($orderData);
 
-            // Вычисляем стоимости на основе переданных items
+            // Calculate costs based on items
             $subtotal = 0;
             foreach ($validated['items'] as $item) {
                 $subtotal += $item['price'] * $item['quantity'];
@@ -74,37 +82,18 @@ class OrderController extends Controller
             $order->subtotal = $subtotal;
             $order->delivery_cost = $order->calculateDeliveryCost();
             $order->total = $order->subtotal + $order->delivery_cost;
-            $order->status = 'pending'; // Устанавливаем статус по умолчанию
+            $order->status = 'pending';
+            $order->items = $validated['items']; // Store items as JSON
 
             $order->save();
 
-            // Сохраняем товары в order_items
-            foreach ($validated['items'] as $item) {
-                // Получаем продукт из базы данных для получения актуального названия
-                $product = Product::find($item['product_id']);
-
-                // Определяем название продукта
-                $productName = 'Unknown Product'; // Значение по умолчанию
-
-                if (!empty($item['name'])) {
-                    $productName = $item['name'];
-                } elseif ($product && !empty($product->title)) { // Изменено с name на title
-                    $productName = $product->title;
-                }
-
-                OrderItem::create([
-                    'order_id' => $order->id,
-                    'product_id' => $item['product_id'],
-                    'quantity' => $item['quantity'],
-                    'price' => $item['price'],
-                    'product_name' => $productName,
-                ]);
-            }
-
-            // Загружаем заказ с товарами для ответа
+            // Load order with items for response
             $order->load('items.product');
 
-            Log::info('Order created successfully:', ['order_id' => $order->id, 'order_number' => $order->order_number]);
+            Log::info('Order created successfully:', [
+                'order_id' => $order->id,
+                'order_number' => $order->order_number
+            ]);
 
             return response()->json([
                 'success' => true,
@@ -117,6 +106,7 @@ class OrderController extends Controller
                 ]
             ], 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Validation failed:', ['errors' => $e->errors()]);
             return response()->json([
                 'success' => false,
                 'message' => 'Validation failed',
@@ -142,7 +132,34 @@ class OrderController extends Controller
     public function show($id)
     {
         try {
-            $order = Order::with('items.product')->findOrFail($id);
+            $order = Order::with(['items' => function($query) {
+                $query->with('product');
+            }])->findOrFail($id);
+            
+            // Add formatted totals
+            $order->formatted_total = number_format($order->total, 2) . ' ₴';
+            $order->formatted_subtotal = number_format($order->subtotal, 2) . ' ₴';
+            $order->formatted_delivery_cost = number_format($order->delivery_cost, 2) . ' ₴';
+
+            // Transform items to include formatted data
+            $order->items = $order->items->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'product_id' => $item->product_id,
+                    'product_name' => $item->product_name,
+                    'quantity' => $item->quantity,
+                    'price' => $item->price,
+                    'formatted_price' => number_format($item->price, 2) . ' ₴',
+                    'total' => $item->price * $item->quantity,
+                    'formatted_total' => number_format($item->price * $item->quantity, 2) . ' ₴',
+                    'current_product' => $item->product ? [
+                        'id' => $item->product->id,
+                        'title' => $item->product->title,
+                        'price' => $item->product->price,
+                        'formatted_price' => number_format($item->product->price, 2) . ' ₴'
+                    ] : null
+                ];
+            });
 
             return response()->json([
                 'success' => true,

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use App\Models\Setting;
 
 class Order extends Model
 {
@@ -26,7 +27,8 @@ class Order extends Model
         'delivery_cost',
         'total',
         'status',
-        'order_number'
+        'order_number',
+        'items'
     ];
 
     /**
@@ -36,6 +38,7 @@ class Order extends Model
         'subtotal' => 'decimal:2',
         'delivery_cost' => 'decimal:2',
         'total' => 'decimal:2',
+        'items' => 'array',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -89,11 +92,13 @@ class Order extends Model
      */
     public function calculateDeliveryCost()
     {
+        $baseDeliveryCost = (float) Setting::getValue('delivery_cost', 50);
+        
         switch ($this->delivery_method) {
             case 'novaPoshta':
-                return 50.00;
+                return $baseDeliveryCost;
             case 'ukrPoshta':
-                return 30.00;
+                return $baseDeliveryCost * 0.6; // 60% of base cost
             case 'selfPickup':
                 return 0.00;
             default:

@@ -277,7 +277,6 @@ class OrderResource extends Resource
             'create' => Pages\CreateOrder::route('/create'),
             'view' => Pages\ViewOrder::route('/{record}'),
             'edit' => Pages\EditOrder::route('/{record}/edit'),
-            'delete' => Pages\DeleteOrder::route('/{record}/delete'),
         ];
     }
 }

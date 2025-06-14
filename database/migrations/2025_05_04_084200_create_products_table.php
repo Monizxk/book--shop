@@ -11,12 +11,13 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->json('images')->nullable(); 
-            $table->decimal('price', 8, 2)->nullable();
+            $table->decimal('price', 10, 2);
             $table->boolean('in_stock')->default(true);
+            $table->boolean('is_on_sale')->default(false);
+            $table->boolean('is_on_way')->default(false);
             $table->foreignId('category_id')->constrained()->onDelete('cascade');
             $table->timestamps();
-});
-
+        });
     }
 
     public function down(): void {
