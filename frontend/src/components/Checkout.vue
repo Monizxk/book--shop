@@ -203,6 +203,7 @@
 import {ref, computed, onMounted, onUnmounted} from 'vue'
 import { useRouter } from 'vue-router'
 import { cart } from '../api/cart.js'
+import axios from "axios";
 
 export default {
   name: 'CheckoutPage',
@@ -210,6 +211,7 @@ export default {
     const router = useRouter()
     const cartItems = ref([])
     const isSubmitting = ref(false)
+    const deliveryCostFromAPI = ref(60)
     
     const form = ref({
       fullName: '',
@@ -235,14 +237,28 @@ export default {
     const subtotal = computed(() => {
       return cartItems.value.reduce((sum, item) => sum + (item.price * item.quantity), 0)
     })
-    
+
+    const loadDeliveryCost = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/api/settings/delivery-cost')
+        console.log('Response:', response)
+
+        // Fix: axios already parses JSON, so use response.data directly
+        deliveryCostFromAPI.value = response.data.delivery_cost
+
+        console.log('Delivery cost loaded:', deliveryCostFromAPI.value)
+      } catch (error) {
+        console.error('Error loading delivery cost:', error)
+        // Keep default value (60)
+      }
+    }
+
     const deliveryCost = computed(() => {
-      // Логіка розрахунку вартості доставки
+      // Fix: use form.value instead of customerInfo.value
       if (form.value.deliveryMethod === 'selfPickup') {
         return 0
       }
-      // Для прикладу - фіксована ціна доставки
-      return 60
+      return deliveryCostFromAPI.value
     })
     
     const total = computed(() => {
@@ -306,6 +322,7 @@ export default {
     }
     console.log('form', form.value)
 
+
     const submitOrder = async () => {
       if (!validateForm()) {
         const firstErrorElement = document.querySelector('.error-message')
@@ -346,25 +363,42 @@ export default {
         if (!response.ok) throw new Error('Server error')
 
         const data = await response.json()
+        console.log('Order API response:', data)
+
+        // Збереження всіх потрібних даних у localStorage
         localStorage.setItem(
             'lastOrderData',
             JSON.stringify({
-              customerInfo: payload.customerInfo, 
-              orderItems: cart.items,
-              orderDate: new Date().toISOString()
+              orderNumber: data.data.order_number,
+              orderDate: data.data.order?.created_at ?? '',
+              customerInfo: {
+                fullName: form.value.fullName,
+                email: form.value.email,
+                phone: form.value.phone,
+                deliveryMethod: form.value.deliveryMethod,
+                city: form.value.city,
+                postOffice: form.value.postOffice,
+                paymentMethod: form.value.paymentMethod,
+                comment: form.value.comment
+              },
+              orderItems: cartItems.value
             })
         )
         cart.clear()
         await router.push('/order-confirmation')
       } catch (error) {
         alert('Помилка при оформленні замовлення. Спробуйте ще раз.')
+        console.error(error)
       } finally {
         isSubmitting.value = false
       }
     }
 
 
+
     onMounted(() => {
+      loadDeliveryCost()
+
       cartItems.value = [...cart.items]
 
       if (cartItems.value.length === 0) {

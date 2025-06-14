@@ -14,7 +14,7 @@
         <div class="info-card">
           <h2>Деталі замовлення</h2>
           <div class="order-number">
-            <strong>Номер замовлення: #{{ orderNumber }}</strong>
+            <strong>Номер замовлення: {{ orderNumber }}</strong>
           </div>
           <div class="order-date">
             <strong>Дата замовлення:</strong> {{ formattedOrderDate }}
@@ -135,18 +135,23 @@
 <script>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import axios from "axios";
 
 export default {
   name: 'OrderConfirm',
   setup() {
     const route = useRoute()
     const router = useRouter()
+    const lastOrder = ref(null)
+    const settings = ref({});
+    const deliveryCostFromAPI = ref(60)
 
     // Дані замовлення (можуть передаватися через route params або localStorage)
     const orderNumber = ref('')
     const orderDate = ref(new Date())
     const customerInfo = ref({
       fullName: '',
+      orderNumber: '',
       email: '',
       phone: '',
       deliveryMethod: '',
@@ -172,11 +177,32 @@ export default {
       return orderItems.value.reduce((sum, item) => sum + (item.price * item.quantity), 0)
     })
 
+// Option 1: Using fetch (if you prefer to remove axios dependency)
+    const loadDeliveryCost = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/api/settings/delivery-cost')
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+
+        const data = await response.json() // This works with fetch
+        console.log('Response data:', data)
+
+        deliveryCostFromAPI.value = data.delivery_cost
+
+        console.log('Delivery cost loaded:', deliveryCostFromAPI.value)
+      } catch (error) {
+        console.error('Error loading delivery cost:', error)
+        // Keep default value (60)
+      }
+    }
+
     const deliveryCost = computed(() => {
       if (customerInfo.value.deliveryMethod === 'selfPickup') {
         return 0
       }
-      return 60 // Фіксована ціна доставки
+      return deliveryCostFromAPI.value
     })
 
     const total = computed(() => {
@@ -206,32 +232,31 @@ export default {
       return `http://localhost:8000/storage/${imagePath}`
     }
 
-    const generateOrderNumber = () => {
-      const timestamp = Date.now().toString().slice(-6)
-      const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0')
-      return `${timestamp}${random}`
-    }
+    // const generateOrderNumber = () => {
+    //   const timestamp = Date.now().toString().slice(-6)
+    //   const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0')
+    //   return `${timestamp}${random}`
+    // }
 
     const printOrder = () => {
       window.print()
     }
 
     const loadOrderData = () => {
-      // Спроба завантажити дані з localStorage або route params
+      let orderData = null
+
       const savedOrderData = localStorage.getItem('lastOrderData')
 
       if (savedOrderData) {
-        const orderData = JSON.parse(savedOrderData)
+        orderData = JSON.parse(savedOrderData)
         customerInfo.value = orderData.customerInfo || {}
         orderItems.value = orderData.orderItems || []
         orderDate.value = new Date(orderData.orderDate || Date.now())
 
-        // Видаляємо дані після завантаження
         localStorage.removeItem('lastOrderData')
       } else if (route.query.orderData) {
-        // Альтернативний спосіб передачі даних через route query
         try {
-          const orderData = JSON.parse(decodeURIComponent(route.query.orderData))
+          orderData = JSON.parse(decodeURIComponent(route.query.orderData))
           customerInfo.value = orderData.customerInfo || {}
           orderItems.value = orderData.orderItems || []
           orderDate.value = new Date(orderData.orderDate || Date.now())
@@ -239,21 +264,32 @@ export default {
           console.error('Помилка при парсингу даних замовлення:', error)
         }
       } else {
-        // Якщо немає даних замовлення, перенаправляемо на головну
         alert('Дані замовлення не знайдено')
         router.push('/')
         return
       }
 
-      // Генеруємо номер замовлення
-      orderNumber.value = generateOrderNumber()
+      orderNumber.value = orderData.orderNumber || 'Без номера'
     }
+
+    onMounted(async () => {
+      const res = await axios.get('http://localhost:8000/api/settings');
+      settings.value = res.data;
+    });
+
 
     onMounted(() => {
       loadOrderData()
+      loadDeliveryCost()
 
       const event = new CustomEvent("hideCategoryTree")
       document.dispatchEvent(event)
+
+      const savedOrder = localStorage.getItem('lastOrderData')
+      if (savedOrder) {
+        lastOrder.value = JSON.parse(savedOrder)
+      }
+
     })
 
     onUnmounted(() => {
@@ -272,7 +308,8 @@ export default {
       getDeliveryMethodName,
       getPaymentMethodName,
       getImageUrl,
-      printOrder
+      printOrder,
+      lastOrder
     }
   }
 }
