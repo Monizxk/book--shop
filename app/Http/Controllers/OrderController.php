@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Api\SettingsController;
 use App\Models\Order;
 use App\Models\OrderItem; // Добавлен импорт
 use App\Models\Product; // Добавлен импорт Product
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -13,11 +15,17 @@ class OrderController extends Controller
     /**
      * Display a listing of orders.
      */
+    protected $settingsController;
+
+    public function __construct(SettingsController $settingsController)
+    {
+        $this->settingsController = $settingsController;
+    }
     public function index()
     {
         try {
             $orders = Order::with('items.product')->orderBy('created_at', 'desc')->get();
-            
+
             // Add formatted totals
             $orders = $orders->map(function ($order) {
                 $order->formatted_total = number_format($order->total, 2) . ' ₴';
@@ -66,33 +74,58 @@ class OrderController extends Controller
                 'items.*.name' => 'nullable|string|max:255',
             ]);
 
-            // Create order without items in fillable
             $orderData = $validated;
             unset($orderData['items']);
 
             $order = new Order();
             $order->fill($orderData);
 
-            // Calculate costs based on items
+            // Calculate subtotal from items
             $subtotal = 0;
             foreach ($validated['items'] as $item) {
                 $subtotal += $item['price'] * $item['quantity'];
             }
 
             $order->subtotal = $subtotal;
-            $order->delivery_cost = $order->calculateDeliveryCost();
+            // Використовуємо метод з SettingsController
+            $order->delivery_cost = $this->settingsController->getDeliveryCostValue();
             $order->total = $order->subtotal + $order->delivery_cost;
             $order->status = 'pending';
-            $order->items = $validated['items']; // Store items as JSON
+
+            Log::info('Order calculations:', [
+                'delivery_method' => $order->delivery_method,
+                'subtotal' => $order->subtotal,
+                'delivery_cost' => $order->delivery_cost,
+                'total' => $order->total
+            ]);
 
             $order->save();
 
-            // Load order with items for response
+            // Create order items
+            foreach ($validated['items'] as $item) {
+                $product = Product::find($item['product_id']);
+
+                $order->items()->create([
+                    'product_id' => $item['product_id'],
+                    'product_name' => $product->title,
+                    'quantity' => $item['quantity'],
+                    'price' => $item['price'],
+                ]);
+            }
+
             $order->load('items.product');
+
+            $order->formatted_total = number_format($order->total, 2) . ' ₴';
+            $order->formatted_subtotal = number_format($order->subtotal, 2) . ' ₴';
+            $order->formatted_delivery_cost = number_format($order->delivery_cost, 2) . ' ₴';
 
             Log::info('Order created successfully:', [
                 'order_id' => $order->id,
-                'order_number' => $order->order_number
+                'order_number' => $order->order_number,
+                'delivery_method' => $order->delivery_method,
+                'subtotal' => $order->subtotal,
+                'delivery_cost' => $order->delivery_cost,
+                'total' => $order->total
             ]);
 
             return response()->json([
@@ -101,31 +134,28 @@ class OrderController extends Controller
                 'data' => [
                     'order_id' => $order->id,
                     'order_number' => $order->order_number,
+                    'subtotal' => $order->formatted_subtotal,
+                    'delivery_cost' => $order->formatted_delivery_cost,
                     'total' => $order->formatted_total,
                     'order' => $order
                 ]
             ], 201);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            Log::error('Validation failed:', ['errors' => $e->errors()]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $e->errors()
-            ], 422);
-        } catch (\Exception $e) {
-            Log::error('Failed to create order: ' . $e->getMessage(), [
-                'request_data' => $request->all(),
-                'trace' => $e->getTraceAsString()
-            ]);
 
+        } catch (\Exception $e) {
+            Log::error('Failed to create order: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to create order',
-                'error' => config('app.debug') ? $e->getMessage() : 'Internal server error'
+                'message' => 'Failed to create order'
             ], 500);
         }
     }
 
+//    private function getDeliveryCostValue()
+//    {
+//        $cost = Setting::getValue('delivery_cost', 250);
+//        Log::info('Delivery cost from settings: ' . $cost);
+//        return (float) $cost;
+//    }
     /**
      * Display the specified order.
      */
@@ -135,7 +165,7 @@ class OrderController extends Controller
             $order = Order::with(['items' => function($query) {
                 $query->with('product');
             }])->findOrFail($id);
-            
+
             // Add formatted totals
             $order->formatted_total = number_format($order->total, 2) . ' ₴';
             $order->formatted_subtotal = number_format($order->subtotal, 2) . ' ₴';

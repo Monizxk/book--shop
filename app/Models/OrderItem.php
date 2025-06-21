@@ -14,7 +14,7 @@ class OrderItem extends Model
         'product_id',
         'quantity',
         'price',
-        'product_name', // Добавлено поле product_name
+        'product_name',
     ];
 
     protected $casts = [

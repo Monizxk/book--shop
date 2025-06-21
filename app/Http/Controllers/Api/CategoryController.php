@@ -19,10 +19,10 @@ class CategoryController extends Controller
         $categories = Category::whereNull('parent_id')
             ->with(['children.children']) // Загружаем два уровня дочерних категорий
             ->get();
-        
+
         return response()->json($categories);
     }
-    
+
     /**
      * Alternative method to get categories with single level of children
      *

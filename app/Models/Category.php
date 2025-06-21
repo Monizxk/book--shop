@@ -40,7 +40,7 @@ class Category extends Model
         if ($this->parent && $this->parent->parent) {
             return $this->parent->parent;
         }
-        
+
         return null;
     }
 
