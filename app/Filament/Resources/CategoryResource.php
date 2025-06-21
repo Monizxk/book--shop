@@ -24,19 +24,29 @@ class CategoryResource extends Resource
                     ->maxLength(255),
                 Forms\Components\Select::make('parent_id')
                     ->label('Parent Category')
-                    ->options(function () {
-                        return Category::whereNull('parent_id')
-                            ->orWhere(function (Builder $query) {
-                                $query->whereNotNull('parent_id')
-                                    ->whereHas('parent', function (Builder $query) {
-                                        $query->whereNull('parent_id');
-                                    });
+                    ->options(function (Forms\Get $get) {
+                        $recordId = $get('../../record.id') ?? request()->route('record');
+
+                        return Category::getPossibleParents($recordId)
+                            ->mapWithKeys(function ($category) {
+                                return [$category->id => $category->getFullPath()];
                             })
-                            ->pluck('name', 'id');
+                            ->toArray();
                     })
                     ->searchable()
                     ->preload()
-                    ->nullable(),
+                    ->nullable()
+                    ->reactive()
+                    ->afterStateUpdated(function (Forms\Set $set, $state) {
+                        // Проверяем, может ли выбранная родительская категория иметь детей
+                        if ($state) {
+                            $parent = Category::find($state);
+                            if ($parent && !$parent->canHaveChildren()) {
+                                $set('parent_id', null);
+                            }
+                        }
+                    })
+                    ->helperText('Выберите родительскую категорию (максимум 5 уровней)'),
             ]);
     }
 
@@ -45,61 +55,125 @@ class CategoryResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('parent.name')
-                    ->label('Parent Category')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('full_path')
+                    ->label('Full Path')
+                    ->getStateUsing(function (Category $record): string {
+                        return $record->getFullPath();
+                    })
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('level')
-                    ->label('Category Level')
+                    ->label('Level')
                     ->getStateUsing(function (Category $record): string {
-                        if ($record->parent_id === null) {
-                            return 'Level 1';
-                        } elseif ($record->parent && $record->parent->parent_id === null) {
-                            return 'Level 2';
-                        } else {
-                            return 'Level 3';
-                        }
-                    }),
+                        return 'Level ' . $record->getLevel();
+                    })
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'Level 1' => 'primary',
+                        'Level 2' => 'success',
+                        'Level 3' => 'warning',
+                        'Level 4' => 'danger',
+                        'Level 5' => 'gray',
+                        default => 'secondary',
+                    })
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('parent.name')
+                    ->label('Parent Category')
+                    ->searchable()
+                    ->sortable()
+                    ->placeholder('—'),
                 Tables\Columns\TextColumn::make('children_count')
                     ->label('Subcategories')
-                    ->counts('children'),
+                    ->counts('children')
+                    ->badge()
+                    ->color('info'),
+                Tables\Columns\IconColumn::make('can_have_children')
+                    ->label('Can Add Children')
+                    ->getStateUsing(function (Category $record): bool {
+                        return $record->canHaveChildren();
+                    })
+                    ->boolean()
+                    ->trueIcon('heroicon-o-check-circle')
+                    ->falseIcon('heroicon-o-x-circle')
+                    ->trueColor('success')
+                    ->falseColor('danger'),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('level')
                     ->label('Category Level')
                     ->options([
-                        'level1' => 'Level 1',
-                        'level2' => 'Level 2',
-                        'level3' => 'Level 3',
+                        '1' => 'Level 1',
+                        '2' => 'Level 2',
+                        '3' => 'Level 3',
+                        '4' => 'Level 4',
+                        '5' => 'Level 5',
                     ])
                     ->query(function (Builder $query, array $data) {
-                        return $query->when($data['value'] === 'level1', function (Builder $query) {
-                            $query->whereNull('parent_id');
-                        })->when($data['value'] === 'level2', function (Builder $query) {
-                            $query->whereNotNull('parent_id')
-                                  ->whereHas('parent', function (Builder $query) {
-                                      $query->whereNull('parent_id');
-                                  });
-                        })->when($data['value'] === 'level3', function (Builder $query) {
-                            $query->whereHas('parent', function (Builder $query) {
-                                $query->whereNotNull('parent_id');
-                            });
-                        });
+                        if ($data['value']) {
+                            $query->byLevel((int) $data['value']);
+                        }
                     }),
+                Tables\Filters\SelectFilter::make('parent_id')
+                    ->label('Parent Category')
+                    ->options(function () {
+                        return Category::whereNull('parent_id')
+                            ->with('children')
+                            ->get()
+                            ->mapWithKeys(function ($category) {
+                                return [$category->id => $category->name];
+                            })
+                            ->toArray();
+                    })
+                    ->searchable(),
+                Tables\Filters\Filter::make('can_have_children')
+                    ->label('Can Have Children')
+                    ->query(function (Builder $query) {
+                        // Фильтр для категорий уровней 1-4 (которые могут иметь детей)
+                        $query->where(function ($q) {
+                            $q->whereNull('parent_id') // Level 1
+                            ->orWhereHas('parent', function ($q) {
+                                $q->whereNull('parent_id'); // Level 2
+                            })
+                                ->orWhereHas('parent.parent', function ($q) {
+                                    $q->whereNull('parent_id'); // Level 3
+                                })
+                                ->orWhereHas('parent.parent.parent', function ($q) {
+                                    $q->whereNull('parent_id'); // Level 4
+                                });
+                        });
+                    })
+                    ->toggle(),
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()
+                    ->before(function (Category $record) {
+                        // Проверяем, есть ли дочерние категории
+                        if ($record->children()->count() > 0) {
+                            throw new \Exception('Cannot delete category with subcategories. Please delete subcategories first.');
+                        }
+                    }),
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make(), // Moved CreateAction to headerActions
+                Tables\Actions\CreateAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->before(function ($records) {
+                            foreach ($records as $record) {
+                                if ($record->children()->count() > 0) {
+                                    throw new \Exception("Cannot delete category '{$record->name}' with subcategories.");
+                                }
+                            }
+                        }),
                 ]),
-            ]);
+            ])
+            ->defaultSort('name')
+            ->striped();
     }
 
     public static function getPages(): array
@@ -107,7 +181,15 @@ class CategoryResource extends Resource
         return [
             'index' => \App\Filament\Resources\CategoryResource\Pages\ListCategories::route('/'),
             'create' => \App\Filament\Resources\CategoryResource\Pages\CreateCategory::route('/create'),
+            'view' => \App\Filament\Resources\CategoryResource\Pages\ViewCategory::route('/{record}'),
             'edit' => \App\Filament\Resources\CategoryResource\Pages\EditCategory::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            // При необходимости можно добавить relation managers
         ];
     }
 }

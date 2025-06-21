@@ -14,10 +14,19 @@ return new class extends Migration
         Schema::create('categories', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->foreignId('parent_id')->nullable()->constrained('categories')->nullOnDelete();
+            $table->unsignedBigInteger('parent_id')->nullable();
             $table->timestamps();
-        });
 
+            // Внешний ключ для родительской категории
+            $table->foreign('parent_id')->references('id')->on('categories')->onDelete('cascade');
+
+            // Индексы для быстрого поиска
+            $table->index('parent_id');
+            $table->index('name');
+
+            // Составной индекс для быстрого поиска по родителю и имени
+            $table->index(['parent_id', 'name']);
+        });
     }
 
     /**
@@ -25,11 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('categories', function (Blueprint $table) {
-            if (Schema::hasColumn('categories', 'parent_id')) {
-                $table->dropForeign(['parent_id']);
-                $table->dropColumn('parent_id');
-            }
-        });
+        Schema::dropIfExists('categories');
     }
 };

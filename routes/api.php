@@ -9,7 +9,34 @@ use App\Http\Controllers\Api\SettingsController;
 
 
 
-Route::get('/categories', [CategoryController::class, 'index']);
+Route::prefix('categories')->group(function () {
+    // Получить все категории с полной иерархией
+    Route::get('/', [CategoryController::class, 'index']);
+
+    // Получить категории с указанной глубиной (1-5)
+    Route::get('/depth/{depth}', [CategoryController::class, 'getByDepth']);
+
+    // Получить категории определенного уровня (1-5)
+    Route::get('/level/{level}', [CategoryController::class, 'getByLevel']);
+
+    // Получить плоский список всех категорий
+    Route::get('/flat', [CategoryController::class, 'getFlat']);
+
+    // Получить дочерние категории для родительской
+    Route::get('/{parentId}/children', [CategoryController::class, 'getChildren']);
+
+    // Получить возможных родителей (исключая указанную категорию)
+    Route::get('/possible-parents/{excludeId?}', [CategoryController::class, 'getPossibleParents']);
+
+    // Получить хлебные крошки для категории
+    Route::get('/{categoryId}/breadcrumb', [CategoryController::class, 'getBreadcrumb']);
+
+    // Получить статистику категорий
+    Route::get('/stats', [CategoryController::class, 'getStats']);
+
+    // Поиск категорий
+    Route::get('/search', [CategoryController::class, 'search']);
+});
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/search', [BookController::class, 'search']);
 Route::get('/products/sale', [ProductController::class, 'sale']);
