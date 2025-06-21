@@ -136,6 +136,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from "axios";
+import Swal from "sweetalert2";
 
 export default {
   name: 'OrderConfirm',
@@ -256,7 +257,10 @@ export default {
           console.error('Помилка при парсингу даних замовлення:', error)
         }
       } else {
-        alert('Дані замовлення не знайдено')
+        Swal.fire({
+          title: "Дані замовлення не знайдено",
+          icon: "question",
+        });
         router.push('/')
         return
       }

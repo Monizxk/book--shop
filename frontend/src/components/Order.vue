@@ -203,6 +203,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { cart } from '../api/cart.js'
+import Swal from "sweetalert2";
 
 export default {
   name: 'CheckoutPage',
@@ -318,12 +319,12 @@ export default {
       isSubmitting.value = true
       
       try {
-        // Тут буде відправка замовлення на сервер
-        // Імітуємо відправку замовлення
         await new Promise(resolve => setTimeout(resolve, 1500))
-        
-        // Успішне завершення замовлення
-        alert('Замовлення успішно оформлено!')
+
+        await Swal.fire({
+          title: "Замовлення успішно оформлено!",
+          icon: "success",
+        });
         
         // Очищення кошика
         cart.clear()
@@ -331,7 +332,10 @@ export default {
         // Перенаправлення на сторінку підтвердження
         router.push('/order-confirmation')
       } catch (error) {
-        alert('Помилка при оформленні замовлення. Спробуйте ще раз.')
+        await Swal.fire({
+          title: "Помилка при оформленні замовлення. Спробуйте ще раз.",
+          icon: "error",
+        });
       } finally {
         isSubmitting.value = false
       }

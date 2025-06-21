@@ -99,6 +99,7 @@ const route = useRoute()
 const categoryId = route.query.categoryId
 import Tree from 'primevue/tree'
 import CategoryTree from "./CategoryTree.vue"
+import Swal from "sweetalert2";
 
 const props = defineProps(['selectedCategory', 'categoryId'])
 
@@ -130,7 +131,10 @@ function getImageUrl(imagePath) {
 
 function addToCart(product) {
   cart.add(product)
-  alert('Товар додано до кошика')
+  Swal.fire({
+    title: "Товар додано до кошика",
+    icon: "success",
+  });
 }
 
 async function fetchSaleProducts() {

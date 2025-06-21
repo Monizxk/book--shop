@@ -204,6 +204,7 @@ import {ref, computed, onMounted, onUnmounted} from 'vue'
 import { useRouter } from 'vue-router'
 import { cart } from '../api/cart.js'
 import axios from "axios";
+import Swal from "sweetalert2";
 
 export default {
   name: 'CheckoutPage',
@@ -388,7 +389,11 @@ export default {
         cart.clear()
         await router.push('/order-confirmation')
       } catch (error) {
-        alert('Помилка при оформленні замовлення. Спробуйте ще раз.')
+        await Swal.fire({
+          icon: "error",
+          title: "Помилка при оформленні замовлення. ",
+          text: "Спробуйте ще раз.",
+        });
         console.error(error)
       } finally {
         isSubmitting.value = false
@@ -403,7 +408,10 @@ export default {
       cartItems.value = [...cart.items]
 
       if (cartItems.value.length === 0) {
-        alert('Ваш кошик порожній')
+        Swal.fire({
+          title: "Drag me!",
+          icon: "info",
+        });
         router.push('/')
       }
       const Event = new CustomEvent("hideCategoryTree")
