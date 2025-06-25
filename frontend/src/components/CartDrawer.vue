@@ -55,42 +55,42 @@ export default {
       default: false
     }
   },
-setup(props, { emit }) {
+  setup(props, { emit }) {
     const cartItems = ref([])
     const router = useRouter()
-    
+
     const total = computed(() => {
       return cart.total
     })
-    
+
     const updateCartItems = () => {
       cartItems.value = [...cart.items]
     }
-    
+
     const close = () => {
       emit('close')
     }
-    
+
     const checkout = () => {
       router.push('/checkout')
       close()
     }
-    
+
     const remove = (id) => {
       cart.remove(id)
       updateCartItems()
     }
-    
+
     const goToCart = () => {
       router.push('/cart')
       close()
     }
 
-  function getImageUrl(imagePath) {
-    if (!imagePath) return ''
-    return `http://localhost:8000/storage/${imagePath}`
-  }
-    
+    function getImageUrl(imagePath) {
+      if (!imagePath) return ''
+      return `http://localhost:8000/storage/${imagePath}`
+    }
+
     // Оновлюємо список товарів при відкритті кошика
     watch(() => props.isOpen, (newVal) => {
       if (newVal) {
@@ -99,13 +99,10 @@ setup(props, { emit }) {
     })
 
     onMounted(() => {
-      const hideCategoryEvent = new CustomEvent("hideCategoryTree")
-      const hideTimeEvent = new CustomEvent("hideTimeContainer")
-
-      document.dispatchEvent(hideCategoryEvent)
-      document.dispatchEvent(hideTimeEvent)
+      // Видаляємо виклики подій hideCategoryTree і hideTimeContainer
+      console.log("CartDrawer mounted")
     })
-    
+
     return {
       cartItems,
       total,

@@ -20,6 +20,12 @@ const breadcrumbItems = ref([
   { title: 'Головна', disabled: false, href: '/' },
   { title: 'Каталог', disabled: false, href: '/category' }
 ])
+const workingHours = ref([])
+const contacts = ref({
+  phone: '+380 (63) 755-42-70',
+  viber: '+380 (63) 755-42-70',
+  email: 'bookseller.in.ua@gmail.com'
+})
 
 watch(() => props.selectedCategory, (newCategory) => {
   if (newCategory) {
@@ -48,6 +54,50 @@ async function fetchProducts() {
     filteredProducts.value = data
   } catch (error) {
     console.error('Помилка при завантаженні продуктів:', error)
+  }
+}
+
+async function fetchWorkingHours() {
+  try {
+    const response = await fetch('http://localhost:8000/api/settings')
+    const data = await response.json()
+    // Собираем рабочие часы из settings
+    workingHours.value = []
+    if (data['working_hours.weekdays.enabled'] === '1') {
+      workingHours.value.push({
+        label: data['working_hours.weekdays.label'] || 'ПН, ВТ, СР, ЧТ, ПТ',
+        hours: data['working_hours.weekdays.hours'] || 'з 9:00 до 18:00'
+      })
+    }
+    if (data['working_hours.saturday.enabled'] === '1') {
+      workingHours.value.push({
+        label: data['working_hours.saturday.label'] || 'Субота',
+        hours: data['working_hours.saturday.hours'] || 'з 10:00 до 15:00'
+      })
+    }
+    if (data['working_hours.sunday.enabled'] === '1') {
+      workingHours.value.push({
+        label: data['working_hours.sunday.label'] || 'Неділя',
+        hours: data['working_hours.sunday.hours'] || 'Вихідний'
+      })
+    }
+  } catch (error) {
+    // fallback: показываем дефолтные
+    workingHours.value = [
+      { label: 'ПН, ВТ, СР, ЧТ, ПТ', hours: 'з 9:00 до 18:00' },
+      { label: 'Сб', hours: 'з 10:00 до 15:00' },
+      { label: 'Нд', hours: 'Вихідний' }
+    ]
+  }
+}
+
+async function fetchContacts() {
+  try {
+    const response = await fetch('http://localhost:8000/api/settings/contacts')
+    const data = await response.json()
+    contacts.value = data
+  } catch (error) {
+    // fallback: дефолтные значения уже заданы
   }
 }
 
@@ -135,6 +185,8 @@ function goToCatalogWithCategory(product) {
 onMounted(() => {
   fetchCategories()
   fetchProducts()
+  fetchWorkingHours()
+  fetchContacts()
 })
 
 </script>
@@ -155,9 +207,9 @@ onMounted(() => {
             </div>
             <div class="info-card">
               <ul>
-                <li>Моб:<strong> +380 (63) 755-42-70</strong></li>
-                <li>Viber:<strong> +380 (63) 755-42-70</strong></li>
-                <li>Email:<strong> bookseller.in.ua@gmail.com</strong></li>
+                <li>Моб:<strong> {{ contacts.phone }}</strong></li>
+                <li>Viber:<strong> {{ contacts.viber }}</strong></li>
+                <li>Email:<strong> {{ contacts.email }}</strong></li>
               </ul>
             </div>
           </div>
@@ -169,9 +221,9 @@ onMounted(() => {
             </div>
             <div class="info-card">
               <ul>
-                <li><strong>ПН, ВТ, СР, ЧТ, ПТ</strong> з 9:00 до 18:00</li>
-                <li><strong>Сб:</strong> з 10:00 до 15:00</li>
-                <li><strong>Нд:</strong> Вихідний</li>
+                <li v-for="(item, idx) in workingHours" :key="idx">
+                  <strong>{{ item.label }}</strong> {{ item.hours }}
+                </li>
               </ul>
             </div>
           </div>

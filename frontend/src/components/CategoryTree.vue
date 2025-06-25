@@ -4,11 +4,11 @@
     <div class="pa-4 text-center">
       <h2 class="category-title">Категорії</h2>
       <Tree
+          v-if="showCategoryTree"
+          v-model:expandedKeys="expandedKeys"
           :value="categoryTree"
-          selectionMode="single"
-          :expandedKeys="expandedKeys"
-          @node-toggle="handleNodeToggle"
           @node-select="handleNodeSelect"
+          @node-toggle="handleNodeToggle"
       />
     </div>
   </v-container>
@@ -20,9 +20,9 @@
         </div>
         <div class="info-card">
           <ul>
-            <li><strong>ПН, ВТ, СР, ЧТ, ПТ</strong> з 9:00 до 18:00</li>
-            <li><strong>Сб:</strong> з 10:00 до 15:00</li>
-            <li><strong>Нд:</strong> Вихідний</li>
+            <li v-for="(item, idx) in workingHours" :key="idx">
+              <strong>{{ item.label }}</strong> {{ item.hours }}
+            </li>
           </ul>
         </div>
       </div>
@@ -31,13 +31,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, defineProps, defineEmits } from 'vue'
+import {ref, onMounted, watch, defineProps, defineEmits, onUnmounted} from 'vue'
 import Tree from 'primevue/tree';
+import router from "../router.js";
 
 
 const emit = defineEmits(['select-category'])
 
-const showTimeContainer = ref(false)       // Графік спочатку прихований
+const showTimeContainer = ref(true)
 const isExpanded = ref(false)
 const isSelected = ref(false)
 const categories = ref([])
@@ -47,6 +48,7 @@ const products = ref([])
 const filteredProducts = ref([])
 const expandedKeys = ref({})
 const breadcrumbItems = ref([])
+const workingHours = ref([])
 
 const fetchCategories = async () => {
   try {
@@ -78,6 +80,16 @@ const convertCategoriesToTreeData = (cats, prefix = '0', parentPath = []) => {
 }
 
 const handleNodeSelect = (node) => {
+  const location = window.location.href
+
+  if (!location.includes("category")) {
+    router.push(`/category/${node.data.id}`)
+    handleNodeSelect()
+    window.location.reload()
+  }
+
+  console.log('Selected category:', node.data)
+
   const categoryId = node.data.id
   selectedCategory.value = node.data
   isSelected.value = true
@@ -148,21 +160,73 @@ const updateBreadcrumbs = (category) => {
 }
 const showCategoryTree = ref(true);
 
+async function fetchWorkingHours() {
+  try {
+    const response = await fetch('http://localhost:8000/api/settings')
+    const data = await response.json()
+    // Собираем рабочие часы из settings
+    workingHours.value = []
+    if (data['working_hours.weekdays.enabled'] === '1') {
+      workingHours.value.push({
+        label: data['working_hours.weekdays.label'] || 'ПН, ВТ, СР, ЧТ, ПТ',
+        hours: data['working_hours.weekdays.hours'] || 'з 9:00 до 18:00'
+      })
+    }
+    if (data['working_hours.saturday.enabled'] === '1') {
+      workingHours.value.push({
+        label: data['working_hours.saturday.label'] || 'Субота',
+        hours: data['working_hours.saturday.hours'] || 'з 10:00 до 15:00'
+      })
+    }
+    if (data['working_hours.sunday.enabled'] === '1') {
+      workingHours.value.push({
+        label: data['working_hours.sunday.label'] || 'Неділя',
+        hours: data['working_hours.sunday.hours'] || 'Вихідний'
+      })
+    }
+  } catch (error) {
+    // fallback: показываем дефолтные
+    workingHours.value = [
+      { label: 'ПН, ВТ, СР, ЧТ, ПТ', hours: 'з 9:00 до 18:00' },
+      { label: 'Сб', hours: 'з 10:00 до 15:00' },
+      { label: 'Нд', hours: 'Вихідний' }
+    ]
+  }
+}
+
 onMounted(() => {
   fetchCategories()
+  fetchWorkingHours()
 
-  document.addEventListener("hideCategoryTree", () => {
+  const hideCategoryListener = () => {
+    console.log('hideCategoryTree triggered')
     showCategoryTree.value = false
-  })
-  document.addEventListener("showCategoryTree", () => {
+  }
+  const showCategoryListener = () => {
+    console.log('showCategoryTree triggered')
     showCategoryTree.value = true
-  })
-
-  document.addEventListener("hideTimeContainer", () => {
+  }
+  const hideTimeListener = () => {
+    console.log('hideTimeContainer triggered')
     showTimeContainer.value = false
-  })
-  document.addEventListener("showTimeContainer", () => {
+    console.log('showTimeContainer:', showTimeContainer.value)
+  }
+  const showTimeListener = () => {
+    console.log('showTimeContainer triggered')
     showTimeContainer.value = true
+    console.log('showTimeContainer:', showTimeContainer.value)
+  }
+
+  document.addEventListener("hideCategoryTree", hideCategoryListener)
+  document.addEventListener("showCategoryTree", showCategoryListener)
+  document.addEventListener("hideTimeContainer", hideTimeListener)
+  document.addEventListener("showTimeContainer", showTimeListener)
+
+  onUnmounted(() => {
+    document.removeEventListener("hideCategoryTree", hideCategoryListener)
+    document.removeEventListener("showCategoryTree", showCategoryListener)
+    document.removeEventListener("hideTimeContainer", hideTimeListener)
+    document.removeEventListener("showTimeContainer", showTimeListener)
   })
 })
 

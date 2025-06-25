@@ -404,6 +404,7 @@ export default {
 
     onMounted(() => {
       loadDeliveryCost()
+      console.log("12312321321")
 
       cartItems.value = [...cart.items]
 
@@ -414,15 +415,21 @@ export default {
         });
         router.push('/')
       }
-      const Event = new CustomEvent("hideCategoryTree")
-      document.dispatchEvent(Event)
+
+      const hideCategoryEvent = new CustomEvent("hideCategoryTree")
+      document.dispatchEvent(hideCategoryEvent)
+      const hideTimeEvent = new CustomEvent("hideTimeContainer")
+      document.dispatchEvent(hideTimeEvent)
     })
 
     onUnmounted(() => {
-      const Event = new CustomEvent("showCategoryTree")
-      document.dispatchEvent(Event)
+      // Показуємо категорії та графік роботи
+      const showCategoryEvent = new CustomEvent("showCategoryTree")
+      document.dispatchEvent(showCategoryEvent)
+      const showTimeEvent = new CustomEvent("showTimeContainer")
+      document.dispatchEvent(showTimeEvent)
     })
-    
+
     return {
       form,
       errors,

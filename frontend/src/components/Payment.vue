@@ -1,6 +1,35 @@
 <script setup>
+import { ref, onMounted } from 'vue'
 import Footer from "./Footer.vue"
 
+const payment = ref({
+  title: 'Оплата в інтернет-магазині «BookSeller»',
+  np_title: 'Нова Пошта (відділення або поштомат)',
+  np_card: 'Оплата платіжною карткою Visa / Mastercard (Без комісії)',
+  np_link: 'Надсилаємо посилання для оплати, після чого Ви отримуєте чек',
+  np_bank: 'Безготівковий переказ (за IBAN) згідно рахунку.',
+  np_bank_note: 'Зверніть увагу, що банк може стягувати додаткову комісію за здійснення безготівкового переказу.',
+  np_cod: 'Комісія Нової Пошти за накладений платіж сплачується одержувачем 20 грн + 2% від суми',
+  np_cod_note: 'Зверніть увагу, що доставка при накладеному платежі є платною!',
+  np_cod_important: 'Для оплати при отриманні потрібно вести 20% від суми',
+  np_cod_important2: 'Для оплати при отриманні потрібно вести 20% від суми',
+  np_address_title: 'Нова Пошта (адресна доставка)',
+  np_address_card: 'Оплата платіжною карткою Visa / Mastercard (Без комісії)',
+  np_address_link: 'Надсилаємо посилання для оплати, після чого Ви отримуєте чек',
+  np_address_bank: 'Безготівковий переказ (за IBAN) згідно рахунку.',
+  np_address_bank_note: 'Зверніть увагу, що банк може стягувати додаткову комісію за здійснення безготівкового переказу.',
+  np_address_cod: 'Комісія Нової Пошти за накладений платіж сплачується одержувачем 20 грн + 2% від суми',
+  np_address_cod_note: 'Зверніть увагу, що доставка при накладеному платежі є платною!',
+  np_address_cod_important: 'Для оплати при отриманні потрібно вести 20% від суми',
+})
+
+onMounted(async () => {
+  try {
+    const response = await fetch('http://localhost:8000/api/settings/payment')
+    const data = await response.json()
+    payment.value = data
+  } catch (e) {}
+})
 </script>
 
 <template>
@@ -8,41 +37,41 @@ import Footer from "./Footer.vue"
     <div class="delivery-page">
       <section class="product-spacer">
         <div class="delivery-header">
-          <h1 class="main-title">Оплата в інтернет-магазині «BookSeller»</h1>
+          <h1 class="main-title">{{ payment.title }}</h1>
         </div>
 
         <div class="delivery-options">
           <div class="delivery-option">
             <div class="option-header">
               <div class="option-icon">📦</div>
-              <h3>Нова Пошта (відділення або поштомат)</h3>
+              <h3>{{ payment.np_title }}</h3>
             </div>
             <div class="option-content">
               <div class="option-features">
               </div>
               <h4>Оплата карткою</h4>
               <p class="option-description">
-                Оплата платіжною карткою Visa / Mastercard (Без комісії)
+                {{ payment.np_card }}
               </p>
               <p class="option-description">
-                Надсилаємо посилання для оплати, після чого Ви отримуєте чек
+                {{ payment.np_link }}
               </p>
               <h4>Банківський переказ</h4>
               <p class="option-description">
-                Безготівковий переказ (за IBAN) згідно рахунку.
+                {{ payment.np_bank }}
               </p>
               <p class="option-description">
-                Зверніть увагу, що банк може стягувати додаткову комісію за здійснення безготівкового переказу.
+                {{ payment.np_bank_note }}
               </p>
               <h4>Оплата при отриманні</h4>
               <p class="option-description">
-                Комісія Нової Пошти за накладений платіж сплачується одержувачем 20 грн + 2% від суми
+                {{ payment.np_cod }}
               </p>
               <p class="option-description">
-                Зверніть увагу, що доставка при накладеному платежі є платною!
+                {{ payment.np_cod_note }}
               </p>
               <p class="pricing-info">
-                <strong>Для оплати при отриманні потрібно вести 20% від суми</strong>
+                <strong>{{ payment.np_cod_important }}</strong>
               </p>
             </div>
           </div>
@@ -51,34 +80,34 @@ import Footer from "./Footer.vue"
             <div class="delivery-option">
               <div class="option-header">
                 <div class="option-icon">📦</div>
-                <h3>Нова Пошта (відділення або поштомат)</h3>
+                <h3>{{ payment.np_address_title }}</h3>
               </div>
               <div class="option-content">
                 <div class="option-features">
                 </div>
                 <h4>Оплата карткою</h4>
                 <p class="option-description">
-                  Оплата платіжною карткою Visa / Mastercard (Без комісії)
+                  {{ payment.np_address_card }}
                 </p>
                 <p class="option-description">
-                  Надсилаємо посилання для оплати, після чого Ви отримуєте чек
+                  {{ payment.np_address_link }}
                 </p>
                 <h4>Банківський переказ</h4>
                 <p class="option-description">
-                  Безготівковий переказ (за IBAN) згідно рахунку.
+                  {{ payment.np_address_bank }}
                 </p>
                 <p class="option-description">
-                  Зверніть увагу, що банк може стягувати додаткову комісію за здійснення безготівкового переказу.
+                  {{ payment.np_address_bank_note }}
                 </p>
                 <h4>Оплата при отриманні</h4>
                 <p class="option-description">
-                  Комісія Нової Пошти за накладений платіж сплачується одержувачем 20 грн + 2% від суми
+                  {{ payment.np_address_cod }}
                 </p>
                 <p class="option-description">
-                  Зверніть увагу, що доставка при накладеному платежі є платною!
+                  {{ payment.np_address_cod_note }}
                 </p>
                 <p class="pricing-info">
-                  <strong>Для оплати при отриманні потрібно вести 20% від суми</strong>
+                  <strong>{{ payment.np_address_cod_important }}</strong>
                 </p>
               </div>
             </div>

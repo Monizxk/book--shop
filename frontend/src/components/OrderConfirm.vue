@@ -177,29 +177,21 @@ export default {
     const subtotal = computed(() => {
       return orderItems.value.reduce((sum, item) => sum + (item.price * item.quantity), 0)
     })
+
     const loadDeliveryCost = async () => {
       try {
         const response = await fetch('http://localhost:8000/api/settings/delivery-cost')
-
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`)
         }
-
         const data = await response.json()
-
         deliveryCostFromAPI.value = data.delivery_cost
-
       } catch (error) {
+        console.error('Помилка при завантаженні вартості доставки:', error)
       }
     }
 
     const deliveryCost = computed(() => {
-
-      // if (customerInfo.value.deliveryMethod === 'selfPickup') {
-      //   console.log('Returning 0 for selfPickup')
-      //   return 0
-      // }
-
       return deliveryCostFromAPI.value
     })
 
@@ -237,7 +229,6 @@ export default {
 
     const loadOrderData = () => {
       let orderData = null
-
       const savedOrderData = localStorage.getItem('lastOrderData')
 
       if (savedOrderData) {
@@ -245,8 +236,6 @@ export default {
         customerInfo.value = orderData.customerInfo || {}
         orderItems.value = orderData.orderItems || orderData.cartItems || []
         orderDate.value = new Date(orderData.orderDate || Date.now())
-
-        // localStorage.removeItem('lastOrderData')
       } else if (route.query.orderData) {
         try {
           orderData = JSON.parse(decodeURIComponent(route.query.orderData))
@@ -269,20 +258,23 @@ export default {
     }
 
     onMounted(async () => {
-
+      console.log("23132131312312");
       try {
         const res = await axios.get('http://localhost:8000/api/settings');
         settings.value = res.data;
       } catch (error) {
-        console.error('Error loading settings:', error);
+        console.error('Помилка при завантаженні налаштувань:', error);
       }
 
       loadOrderData()
-
       await loadDeliveryCost()
 
-      const event = new CustomEvent("hideCategoryTree")
-      document.dispatchEvent(event)
+      console.log("Виклик hideCategoryTree");
+      const hideCategoryEvent = new CustomEvent("hideCategoryTree")
+      document.dispatchEvent(hideCategoryEvent)
+      console.log("Виклик hideTimeContainer");
+      const hideTimeEvent = new CustomEvent("hideTimeContainer")
+      document.dispatchEvent(hideTimeEvent)
 
       const savedOrder = localStorage.getItem('lastOrderData')
       if (savedOrder) {
@@ -291,8 +283,11 @@ export default {
     })
 
     onUnmounted(() => {
-      const event = new CustomEvent("showCategoryTree")
-      document.dispatchEvent(event)
+      console.log("OrderConfirm unmounted");
+      const showCategoryEvent = new CustomEvent("showCategoryTree")
+      document.dispatchEvent(showCategoryEvent)
+      const showTimeEvent = new CustomEvent("showTimeContainer")
+      document.dispatchEvent(showTimeEvent)
     })
 
     return {

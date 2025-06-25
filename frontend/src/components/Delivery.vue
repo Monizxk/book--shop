@@ -1,5 +1,29 @@
 <script setup>
+import { ref, onMounted } from 'vue'
 import Footer from "./Footer.vue"
+
+const delivery = ref({
+  title: 'Доставка в інтернет-магазині «BookSeller»',
+  description: 'Швидка та надійна доставка книг по всій Україні через службу «Нова Пошта»',
+  np_branch_title: 'Нова Пошта (відділення або поштомат)',
+  np_branch_desc: 'Отримайте замовлення у найближчому відділенні або поштоматі Нової Пошти',
+  np_branch_price: 'згідно з тарифами компанії Нова Пошта',
+  np_address_title: 'Нова Пошта (адресна доставка)',
+  np_address_desc: 'Доставка безпосередньо за вказаною адресою у зручний для вас час',
+  np_address_price: 'згідно з тарифами компанії Нова Пошта',
+  howto_title: 'Як оформити замовлення:',
+  howto_list: 'Оберіть потрібні книги та додайте їх до кошика\nПерейдіть до оформлення замовлення\nВкажіть спосіб доставки та адресу\nОберіть зручний спосіб оплати',
+  terms_title: '⏰ Терміни доставки:',
+  terms_list: 'По Україні: 1-3 робочих дні\nКиїв: 1-2 робочих дні\nВіддалені регіони: 2-4 робочих дні',
+})
+
+onMounted(async () => {
+  try {
+    const response = await fetch('http://localhost:8000/api/settings/delivery')
+    const data = await response.json()
+    delivery.value = data
+  } catch (e) {}
+})
 
 </script>
 
@@ -8,9 +32,9 @@ import Footer from "./Footer.vue"
   <div class="delivery-page">
     <section class="product-spacer">
       <div class="delivery-header">
-        <h1 class="main-title">Доставка в інтернет-магазині «BookSeller»</h1>
+        <h1 class="main-title">{{ delivery.title }}</h1>
         <p class="main-description">
-          Швидка та надійна доставка книг по всій Україні через службу «Нова Пошта»
+          {{ delivery.description }}
         </p>
       </div>
 
@@ -19,7 +43,7 @@ import Footer from "./Footer.vue"
         <div class="delivery-option">
           <div class="option-header">
             <div class="option-icon">📦</div>
-            <h3>Нова Пошта (відділення або поштомат)</h3>
+            <h3>{{ delivery.np_branch_title }}</h3>
           </div>
           <div class="option-content">
             <div class="option-features">
@@ -27,10 +51,10 @@ import Footer from "./Footer.vue"
 <!--              <span class="feature-tag">Економно</span>-->
             </div>
             <p class="option-description">
-              Отримайте замовлення у найближчому відділенні або поштоматі Нової Пошти
+              {{ delivery.np_branch_desc }}
             </p>
             <p class="pricing-info">
-              <strong>Вартість:</strong> згідно з тарифами компанії Нова Пошта
+              <strong>Вартість:</strong> {{ delivery.np_branch_price }}
             </p>
           </div>
         </div>
@@ -38,7 +62,7 @@ import Footer from "./Footer.vue"
         <div class="delivery-option">
           <div class="option-header">
             <div class="option-icon">🏠</div>
-            <h3>Нова Пошта (адресна доставка)</h3>
+            <h3>{{ delivery.np_address_title }}</h3>
           </div>
           <div class="option-content">
             <div class="option-features">
@@ -46,10 +70,10 @@ import Footer from "./Footer.vue"
 <!--              <span class="feature-tag">До дверей</span>-->
             </div>
             <p class="option-description">
-              Доставка безпосередньо за вказаною адресою у зручний для вас час
+              {{ delivery.np_address_desc }}
             </p>
             <p class="pricing-info">
-              <strong>Вартість:</strong> згідно з тарифами компанії Нова Пошта
+              <strong>Вартість:</strong> {{ delivery.np_address_price }}
             </p>
           </div>
         </div>
@@ -57,21 +81,16 @@ import Footer from "./Footer.vue"
 
       <div class="additional-info">
         <div class="info-card">
-          <h4>📋 Як оформити замовлення:</h4>
+          <h4>{{ delivery.howto_title }}</h4>
           <ol>
-            <li>Оберіть потрібні книги та додайте їх до кошика</li>
-            <li>Перейдіть до оформлення замовлення</li>
-            <li>Вкажіть спосіб доставки та адресу</li>
-            <li>Оберіть зручний спосіб оплати</li>
+            <li v-for="(item, idx) in delivery.howto_list.split('\n')" :key="idx">{{ item }}</li>
           </ol>
         </div>
 
         <div class="info-card">
-          <h4>⏰ Терміни доставки:</h4>
+          <h4>{{ delivery.terms_title }}</h4>
           <ul>
-            <li><strong>По Україні:</strong> 1-3 робочих дні</li>
-            <li><strong>Київ:</strong> 1-2 робочих дні</li>
-            <li><strong>Віддалені регіони:</strong> 2-4 робочих дні</li>
+            <li v-for="(item, idx) in delivery.terms_list.split('\n')" :key="idx">{{ item }}</li>
           </ul>
         </div>
       </div>

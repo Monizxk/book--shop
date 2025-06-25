@@ -37,8 +37,8 @@
         </li>
         <!-- Усередині <ul id="navbar"> додай внизу -->
         <li class="contact-nav">
-          <i class="fas fa-phone-alt"></i> +38 (098) 123-45-67<br />
-          <i class="fas fa-envelope"></i> info@bookstore.com
+          <i class="fas fa-phone-alt"></i> {{ contacts.phone }}<br />
+          <i class="fas fa-envelope"></i> {{ contacts.email }}
         </li>
 
       </ul>
@@ -74,11 +74,16 @@ export default {
     const router = useRouter()
     const route = useRoute()
 
-    function handleSearch() {
-      if (searchQuery.value.trim() !== '') {
-        router.push({ name: 'SearchResults', query: { q: searchQuery.value } })
-      }
-    }
+    const contacts = ref({
+      phone: '+380 (63) 755-42-70',
+      email: 'bookseller.in.ua@gmail.com'
+    })
+
+    // function handleSearch() {
+    //   if (searchQuery.value.trim() !== '') {
+    //     router.push({ name: 'SearchResults', query: { q: searchQuery.value } })
+    //   }
+    // }
 
     const toggleMobileMenu = () => {
       isMobileMenuOpen.value = !isMobileMenuOpen.value
@@ -111,11 +116,26 @@ export default {
     const closeCartDrawer = () => {
       isCartOpen.value = false
     }
+
+
+    async function fetchContacts() {
+      try {
+        const response = await fetch('http://localhost:8000/api/settings/contacts')
+        const data = await response.json()
+        contacts.value = data
+      } catch (error) {
+        // fallback: дефолтные значения уже заданы
+      }
+    }
     
     // Закриваємо меню при зміні маршруту
     watch(() => route.path, () => {
       isMobileMenuOpen.value = false
       isCartOpen.value = false
+    })
+
+    onMounted(() => {
+      fetchContacts()
     })
 
     return {
@@ -127,6 +147,7 @@ export default {
       isCurrentRoute,
       toggleCartDrawer,
       handleSearch,
+      contacts,
       closeCartDrawer
     }
   }

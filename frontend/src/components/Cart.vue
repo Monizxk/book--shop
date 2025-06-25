@@ -138,14 +138,23 @@ export default {
 
     
     onMounted(() => {
+      console.log("2131221")
       updateCartItems()
       const Event = new CustomEvent("hideCategoryTree")
       document.dispatchEvent(Event)
+
+      const hideCategoryEvent = new CustomEvent("hideCategoryTree")
+      document.dispatchEvent(hideCategoryEvent)
+      const hideTimeEvent = new CustomEvent("hideTimeContainer")
+      document.dispatchEvent(hideTimeEvent)
     })
 
     onUnmounted(() => {
-      const Event = new CustomEvent("showCategoryTree")
-      document.dispatchEvent(Event)
+      // Показуємо категорії та графік роботи
+      const showCategoryEvent = new CustomEvent("showCategoryTree")
+      document.dispatchEvent(showCategoryEvent)
+      const showTimeEvent = new CustomEvent("showTimeContainer")
+      document.dispatchEvent(showTimeEvent)
     })
     
     return {
