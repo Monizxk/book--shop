@@ -17,7 +17,7 @@ return new class extends Migration
             $table->boolean('is_on_way')->default(false);
             $table->foreignId('category_id')->constrained()->onDelete('cascade');
             $table->timestamps();
-        });
+});
     }
 
     public function down(): void {
