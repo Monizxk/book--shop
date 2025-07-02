@@ -46,10 +46,10 @@ class CategoryResource extends Resource
                             }
                         }
                     })
-                    ->helperText('Выберите родительскую категорию (максимум 5 уровней)'),
+                    ->helperText('Виберіть батьківську категорію (максимум 5 рівнів)'),
                 Forms\Components\Toggle::make('hidden')
-                    ->label('Скрыть категорию')
-                    ->helperText('Скрытые категории не будут отображаться на сайте')
+                    ->label('Приховати категорію')
+                    ->helperText('Приховані категорії не відображатимуться на сайті')
                     ->default(false),
             ]);
     }
@@ -62,14 +62,14 @@ class CategoryResource extends Resource
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('full_path')
-                    ->label('Full Path')
+                    ->label('Повний шлях категорії')
                     ->getStateUsing(function (Category $record): string {
                         return $record->getFullPath();
                     })
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('level')
-                    ->label('Level')
+                    ->label('Рівень')
                     ->getStateUsing(function (Category $record): string {
                         return 'Level ' . $record->getLevel();
                     })
@@ -84,27 +84,27 @@ class CategoryResource extends Resource
                     })
                     ->sortable(),
                 Tables\Columns\TextColumn::make('parent.name')
-                    ->label('Parent Category')
+                    ->label('Головна категорія')
                     ->searchable()
                     ->sortable()
                     ->placeholder('—'),
-                Tables\Columns\TextColumn::make('children_count')
-                    ->label('Subcategories')
-                    ->counts('children')
-                    ->badge()
-                    ->color('info'),
-                Tables\Columns\IconColumn::make('can_have_children')
-                    ->label('Can Add Children')
-                    ->getStateUsing(function (Category $record): bool {
-                        return $record->canHaveChildren();
-                    })
-                    ->boolean()
-                    ->trueIcon('heroicon-o-check-circle')
-                    ->falseIcon('heroicon-o-x-circle')
-                    ->trueColor('success')
-                    ->falseColor('danger'),
+//                Tables\Columns\TextColumn::make('children_count')
+//                    ->label('Subcategories')
+//                    ->counts('children')
+//                    ->badge()
+//                    ->color('info'),
+//                Tables\Columns\IconColumn::make('can_have_children')
+//                    ->label('Can Add Children')
+//                    ->getStateUsing(function (Category $record): bool {
+//                        return $record->canHaveChildren();
+//                    })
+//                    ->boolean()
+//                    ->trueIcon('heroicon-o-check-circle')
+//                    ->falseIcon('heroicon-o-x-circle')
+//                    ->trueColor('success')
+//                    ->falseColor('danger'),
                 Tables\Columns\ToggleColumn::make('hidden')
-                    ->label('Hidden')
+                    ->label('Схований')
                     ->onIcon('heroicon-o-eye-slash')
                     ->offIcon('heroicon-o-eye')
                     ->onColor('warning')
