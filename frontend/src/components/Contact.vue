@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, onMounted} from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Footer from "./Footer.vue"
 
@@ -21,11 +21,9 @@ const breadcrumbItems = ref([
   { title: 'Каталог', disabled: false, href: '/category' }
 ])
 const workingHours = ref([])
-const contacts = ref({
-  phone: '+380 (63) 755-42-70',
-  viber: '+380 (63) 755-42-70',
-  email: 'bookseller.in.ua@gmail.com'
-})
+const contacts = ref({})
+const isLoadingContacts = ref(true) // Состояние загрузки контактов
+const isLoadingWorkingHours = ref(true) // Состояние загрузки графика работы
 
 watch(() => props.selectedCategory, (newCategory) => {
   if (newCategory) {
@@ -46,6 +44,7 @@ async function fetchCategories() {
     console.error('Помилка при завантаженні категорій:', error)
   }
 }
+
 async function fetchProducts() {
   try {
     const response = await fetch('http://localhost:8000/api/products')
@@ -58,10 +57,10 @@ async function fetchProducts() {
 }
 
 async function fetchWorkingHours() {
+  isLoadingWorkingHours.value = true
   try {
     const response = await fetch('http://localhost:8000/api/settings')
     const data = await response.json()
-    // Собираем рабочие часы из settings
     workingHours.value = []
     if (data['working_hours.weekdays.enabled'] === '1') {
       workingHours.value.push({
@@ -82,22 +81,30 @@ async function fetchWorkingHours() {
       })
     }
   } catch (error) {
-    // fallback: показываем дефолтные
     workingHours.value = [
       { label: 'ПН, ВТ, СР, ЧТ, ПТ', hours: 'з 9:00 до 18:00' },
       { label: 'Сб', hours: 'з 10:00 до 15:00' },
       { label: 'Нд', hours: 'Вихідний' }
     ]
+  } finally {
+    isLoadingWorkingHours.value = false
   }
 }
 
 async function fetchContacts() {
+  isLoadingContacts.value = true
   try {
     const response = await fetch('http://localhost:8000/api/settings/contacts')
     const data = await response.json()
     contacts.value = data
   } catch (error) {
-    // fallback: дефолтные значения уже заданы
+    contacts.value = {
+      phone: '+380 (63) 755-42-70',
+      viber: '+380 (63) 755-42-70',
+      email: 'bookseller.in.ua@gmail.com'
+    }
+  } finally {
+    isLoadingContacts.value = false
   }
 }
 
@@ -105,15 +112,10 @@ function convertCategoriesToTreeData(categories, prefix = '0', parentPath = []) 
   return categories.map((cat, index) => {
     const currentKey = `${prefix}-${index}`
     const currentPath = [...parentPath, cat.name]
-
     return {
       key: currentKey,
       label: cat.name,
-      data: {
-        id: cat.id,
-        name: cat.name,
-        path: currentPath
-      },
+      data: { id: cat.id, name: cat.name, path: currentPath },
       children: cat.children ? convertCategoriesToTreeData(cat.children, currentKey, currentPath) : []
     }
   })
@@ -121,19 +123,15 @@ function convertCategoriesToTreeData(categories, prefix = '0', parentPath = []) 
 
 function getCategoryWithChildrenIds(categoryId) {
   const ids = [categoryId]
-
   const findChildrenIds = (categories) => {
     categories.forEach(category => {
-      if (category.id === categoryId) {
-        if (category.children) {
-          collectChildrenIds(category.children, ids)
-        }
+      if (category.id === categoryId && category.children) {
+        collectChildrenIds(category.children, ids)
       } else if (category.children) {
         findChildrenIds(category.children)
       }
     })
   }
-
   findChildrenIds(categories.value)
   return ids
 }
@@ -141,20 +139,17 @@ function getCategoryWithChildrenIds(categoryId) {
 function collectChildrenIds(children, ids) {
   children.forEach(child => {
     ids.push(child.id)
-    if (child.children) {
-      collectChildrenIds(child.children, ids)
-    }
+    if (child.children) collectChildrenIds(child.children, ids)
   })
 }
 
 function updateBreadcrumbs(category) {
-  if (category && category.path) {
+  if (category?.path) {
     const pathItems = category.path.map((name, index, arr) => ({
       title: name,
       disabled: index === arr.length - 1,
       href: index === arr.length - 1 ? '' : `/catalog/${name.toLowerCase()}`
     }))
-
     breadcrumbItems.value = [
       { title: 'Головна', disabled: false, href: '/' },
       { title: 'Каталог', disabled: false, href: '/catalog' },
@@ -173,10 +168,9 @@ function resetFilter() {
 
 function filterProductsByCategory(category) {
   const ids = getCategoryWithChildrenIds(category.id)
-  filteredProducts.value = products.value.filter(product =>
-      ids.includes(product.category_id)
-  )
+  filteredProducts.value = products.value.filter(product => ids.includes(product.category_id))
 }
+
 function goToCatalogWithCategory(product) {
   const categoryId = product.category_id
   router.push({ name: 'Category', params: { categoryId } })
@@ -188,7 +182,6 @@ onMounted(() => {
   fetchWorkingHours()
   fetchContacts()
 })
-
 </script>
 
 <template>
@@ -196,7 +189,7 @@ onMounted(() => {
     <div class="contact-page">
       <section class="product-spacer">
         <div class="contact-header">
-          <h1 class="main-title">Контактна інформація магазину "Bookseller"</h1>
+          <h1 class="main-title">Контактна інформація магазину</h1>
         </div>
 
         <div class="contact-options">
@@ -206,10 +199,15 @@ onMounted(() => {
               <h3>Контакти</h3>
             </div>
             <div class="info-card">
-              <ul>
-                <li>Моб:<strong> {{ contacts.phone }}</strong></li>
-                <li>Viber:<strong> {{ contacts.viber }}</strong></li>
-                <li>Email:<strong> {{ contacts.email }}</strong></li>
+              <ul v-if="!isLoadingContacts">
+                <li>Моб: <strong>{{ contacts.phone }}</strong></li>
+                <li>Viber: <strong>{{ contacts.viber }}</strong></li>
+                <li>Email: <strong>{{ contacts.email }}</strong></li>
+              </ul>
+              <ul v-else>
+                <li><div class="skeleton" style="width: 100%; height: 20px; margin-bottom: 10px;"></div></li>
+                <li><div class="skeleton" style="width: 100%; height: 20px; margin-bottom: 10px;"></div></li>
+                <li><div class="skeleton" style="width: 100%; height: 20px;"></div></li>
               </ul>
             </div>
           </div>
@@ -220,19 +218,28 @@ onMounted(() => {
               <h3>Графік роботи</h3>
             </div>
             <div class="info-card">
-              <ul>
+              <ul v-if="!isLoadingWorkingHours">
                 <li v-for="(item, idx) in workingHours" :key="idx">
                   <strong>{{ item.label }}</strong> {{ item.hours }}
                 </li>
+              </ul>
+              <ul v-else>
+                <li><div class="skeleton" style="width: 100%; height: 20px; margin-bottom: 10px;"></div></li>
+                <li><div class="skeleton" style="width: 100%; height: 20px; margin-bottom: 10px;"></div></li>
+                <li><div class="skeleton" style="width: 100%; height: 20px;"></div></li>
               </ul>
             </div>
           </div>
         </div>
 
         <div class="contact-info">
-          <p>
+          <p v-if="!isLoadingContacts">
             <strong>Маєте питання?</strong> Зв'яжіться з нами, і ми з радістю допоможемо!
             <icon instagram viber></icon>
+          </p>
+          <p v-else>
+            <div class="skeleton" style="width: 60%; height: 20px; margin-bottom: 10px;"></div>
+            <div class="skeleton" style="width: 20%; height: 20px;"></div>
           </p>
         </div>
       </section>
@@ -245,6 +252,17 @@ onMounted(() => {
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
 
 .product-spacer {
   max-width: 1200px;

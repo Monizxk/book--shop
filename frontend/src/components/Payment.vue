@@ -2,33 +2,39 @@
 import { ref, onMounted } from 'vue'
 import Footer from "./Footer.vue"
 
-const payment = ref({
-  title: 'Оплата в інтернет-магазині «BookSeller»',
-  np_title: 'Нова Пошта (відділення або поштомат)',
-  np_card: 'Оплата платіжною карткою Visa / Mastercard (Без комісії)',
-  np_link: 'Надсилаємо посилання для оплати, після чого Ви отримуєте чек',
-  np_bank: 'Безготівковий переказ (за IBAN) згідно рахунку.',
-  np_bank_note: 'Зверніть увагу, що банк може стягувати додаткову комісію за здійснення безготівкового переказу.',
-  np_cod: 'Комісія Нової Пошти за накладений платіж сплачується одержувачем 20 грн + 2% від суми',
-  np_cod_note: 'Зверніть увагу, що доставка при накладеному платежі є платною!',
-  np_cod_important: 'Для оплати при отриманні потрібно вести 20% від суми',
-  np_cod_important2: 'Для оплати при отриманні потрібно вести 20% від суми',
-  np_address_title: 'Нова Пошта (адресна доставка)',
-  np_address_card: 'Оплата платіжною карткою Visa / Mastercard (Без комісії)',
-  np_address_link: 'Надсилаємо посилання для оплати, після чого Ви отримуєте чек',
-  np_address_bank: 'Безготівковий переказ (за IBAN) згідно рахунку.',
-  np_address_bank_note: 'Зверніть увагу, що банк може стягувати додаткову комісію за здійснення безготівкового переказу.',
-  np_address_cod: 'Комісія Нової Пошти за накладений платіж сплачується одержувачем 20 грн + 2% від суми',
-  np_address_cod_note: 'Зверніть увагу, що доставка при накладеному платежі є платною!',
-  np_address_cod_important: 'Для оплати при отриманні потрібно вести 20% від суми',
-})
+const payment = ref({})
+const isLoadingPayment = ref(true) // Состояние загрузки данных об оплате
 
 onMounted(async () => {
+  isLoadingPayment.value = true
   try {
     const response = await fetch('http://localhost:8000/api/settings/payment')
     const data = await response.json()
     payment.value = data
-  } catch (e) {}
+  } catch (e) {
+    // Fallback: дефолтные значения в случае ошибки
+    payment.value = {
+      title: 'Оплата в інтернет-магазині',
+      np_title: 'Нова Пошта (відділення або поштомат)',
+      np_card: 'Оплата платіжною карткою Visa / Mastercard (Без комісії)',
+      np_link: 'Надсилаємо посилання для оплати, після чого Ви отримуєте чек',
+      np_bank: 'Безготівковий переказ (за IBAN) згідно рахунку.',
+      np_bank_note: 'Зверніть увагу, що банк може стягувати додаткову комісію за здійснення безготівкового переказу.',
+      np_cod: 'Комісія Нової Пошти за накладений платіж сплачується одержувачем 20 грн + 2% від суми',
+      np_cod_note: 'Зверніть увагу, що доставка при накладеному платежі є платною!',
+      np_cod_important: 'Для оплати при отриманні потрібно внести 20% від суми',
+      np_address_title: 'Нова Пошта (адресна доставка)',
+      np_address_card: 'Оплата платіжною карткою Visa / Mastercard (Без комісії)',
+      np_address_link: 'Надсилаємо посилання для оплати, після чого Ви отримуєте чек',
+      np_address_bank: 'Безготівковий переказ (за IBAN) згідно рахунку.',
+      np_address_bank_note: 'Зверніть увагу, що банк може стягувати додаткову комісію за здійснення безготівкового переказу.',
+      np_address_cod: 'Комісія Нової Пошти за накладений платіж сплачується одержувачем 20 грн + 2% від суми',
+      np_address_cod_note: 'Зверніть увагу, що доставка при накладеному платежі є платною!',
+      np_address_cod_important: 'Для оплати при отриманні потрібно внести 20% від суми',
+    }
+  } finally {
+    isLoadingPayment.value = false
+  }
 })
 </script>
 
@@ -37,42 +43,41 @@ onMounted(async () => {
     <div class="delivery-page">
       <section class="product-spacer">
         <div class="delivery-header">
-          <h1 class="main-title">{{ payment.title }}</h1>
+          <h1 class="main-title" v-if="!isLoadingPayment">{{ payment.title }}</h1>
+          <div v-else class="skeleton" style="width: 60%; height: 36px; margin-bottom: 20px;"></div>
         </div>
 
         <div class="delivery-options">
           <div class="delivery-option">
             <div class="option-header">
               <div class="option-icon">📦</div>
-              <h3>{{ payment.np_title }}</h3>
+              <h3 v-if="!isLoadingPayment">{{ payment.np_title }}</h3>
+              <div v-else class="skeleton" style="width: 40%; height: 24px;"></div>
             </div>
             <div class="option-content">
-              <div class="option-features">
-              </div>
-              <h4>Оплата карткою</h4>
-              <p class="option-description">
-                {{ payment.np_card }}
-              </p>
-              <p class="option-description">
-                {{ payment.np_link }}
-              </p>
-              <h4>Банківський переказ</h4>
-              <p class="option-description">
-                {{ payment.np_bank }}
-              </p>
-              <p class="option-description">
-                {{ payment.np_bank_note }}
-              </p>
-              <h4>Оплата при отриманні</h4>
-              <p class="option-description">
-                {{ payment.np_cod }}
-              </p>
-              <p class="option-description">
-                {{ payment.np_cod_note }}
-              </p>
-              <p class="pricing-info">
+              <div class="option-features"></div>
+              <h4 v-if="!isLoadingPayment">Оплата карткою</h4>
+              <div v-else class="skeleton" style="width: 30%; height: 20px; margin-bottom: 10px;"></div>
+              <p class="option-description" v-if="!isLoadingPayment">{{ payment.np_card }}</p>
+              <div v-else class="skeleton" style="width: 80%; height: 16px; margin-bottom: 10px;"></div>
+              <p class="option-description" v-if="!isLoadingPayment">{{ payment.np_link }}</p>
+              <div v-else class="skeleton" style="width: 80%; height: 16px; margin-bottom: 10px;"></div>
+              <h4 v-if="!isLoadingPayment">Банківський переказ</h4>
+              <div v-else class="skeleton" style="width: 30%; height: 20px; margin-bottom: 10px;"></div>
+              <p class="option-description" v-if="!isLoadingPayment">{{ payment.np_bank }}</p>
+              <div v-else class="skeleton" style="width: 80%; height: 16px; margin-bottom: 10px;"></div>
+              <p class="option-description" v-if="!isLoadingPayment">{{ payment.np_bank_note }}</p>
+              <div v-else class="skeleton" style="width: 80%; height: 16px; margin-bottom: 10px;"></div>
+              <h4 v-if="!isLoadingPayment">Оплата при отриманні</h4>
+              <div v-else class="skeleton" style="width: 30%; height: 20px; margin-bottom: 10px;"></div>
+              <p class="option-description" v-if="!isLoadingPayment">{{ payment.np_cod }}</p>
+              <div v-else class="skeleton" style="width: 80%; height: 16px; margin-bottom: 10px;"></div>
+              <p class="option-description" v-if="!isLoadingPayment">{{ payment.np_cod_note }}</p>
+              <div v-else class="skeleton" style="width: 80%; height: 16px; margin-bottom: 10px;"></div>
+              <p class="pricing-info" v-if="!isLoadingPayment">
                 <strong>{{ payment.np_cod_important }}</strong>
               </p>
+              <div v-else class="skeleton" style="width: 60%; height: 16px;"></div>
             </div>
           </div>
 
@@ -80,54 +85,67 @@ onMounted(async () => {
             <div class="delivery-option">
               <div class="option-header">
                 <div class="option-icon">📦</div>
-                <h3>{{ payment.np_address_title }}</h3>
+                <h3 v-if="!isLoadingPayment">{{ payment.np_address_title }}</h3>
+                <div v-else class="skeleton" style="width: 40%; height: 24px;"></div>
               </div>
               <div class="option-content">
-                <div class="option-features">
-                </div>
-                <h4>Оплата карткою</h4>
-                <p class="option-description">
-                  {{ payment.np_address_card }}
-                </p>
-                <p class="option-description">
-                  {{ payment.np_address_link }}
-                </p>
-                <h4>Банківський переказ</h4>
-                <p class="option-description">
-                  {{ payment.np_address_bank }}
-                </p>
-                <p class="option-description">
-                  {{ payment.np_address_bank_note }}
-                </p>
-                <h4>Оплата при отриманні</h4>
-                <p class="option-description">
-                  {{ payment.np_address_cod }}
-                </p>
-                <p class="option-description">
-                  {{ payment.np_address_cod_note }}
-                </p>
-                <p class="pricing-info">
+                <div class="option-features"></div>
+                <h4 v-if="!isLoadingPayment">Оплата карткою</h4>
+                <div v-else class="skeleton" style="width: 30%; height: 20px; margin-bottom: 10px;"></div>
+                <p class="option-description" v-if="!isLoadingPayment">{{ payment.np_address_card }}</p>
+                <div v-else class="skeleton" style="width: 80%; height: 16px; margin-bottom: 10px;"></div>
+                <p class="option-description" v-if="!isLoadingPayment">{{ payment.np_address_link }}</p>
+                <div v-else class="skeleton" style="width: 80%; height: 16px; margin-bottom: 10px;"></div>
+                <h4 v-if="!isLoadingPayment">Банківський переказ</h4>
+                <div v-else class="skeleton" style="width: 30%; height: 20px; margin-bottom: 10px;"></div>
+                <p class="option-description" v-if="!isLoadingPayment">{{ payment.np_address_bank }}</p>
+                <div v-else class="skeleton" style="width: 80%; height: 16px; margin-bottom: 10px;"></div>
+                <p class="option-description" v-if="!isLoadingPayment">{{ payment.np_address_bank_note }}</p>
+                <div v-else class="skeleton" style="width: 80%; height: 16px; margin-bottom: 10px;"></div>
+                <h4 v-if="!isLoadingPayment">Оплата при отриманні</h4>
+                <div v-else class="skeleton" style="width: 30%; height: 20px; margin-bottom: 10px;"></div>
+                <p class="option-description" v-if="!isLoadingPayment">{{ payment.np_address_cod }}</p>
+                <div v-else class="skeleton" style="width: 80%; height: 16px; margin-bottom: 10px;"></div>
+                <p class="option-description" v-if="!isLoadingPayment">{{ payment.np_address_cod_note }}</p>
+                <div v-else class="skeleton" style="width: 80%; height: 16px; margin-bottom: 10px;"></div>
+                <p class="pricing-info" v-if="!isLoadingPayment">
                   <strong>{{ payment.np_address_cod_important }}</strong>
                 </p>
+                <div v-else class="skeleton" style="width: 60%; height: 16px;"></div>
               </div>
             </div>
           </div>
         </div>
 
         <div class="contact-info">
-          <p>
+          <p v-if="!isLoadingPayment">
             <strong>Маєте питання?</strong> Зв'яжіться з нами, і ми з радістю допоможемо!
+          </p>
+          <p v-else>
+            <div class="skeleton" style="width: 60%; height: 16px; margin-bottom: 10px;"></div>
+            <div class="skeleton" style="width: 20%; height: 16px;"></div>
           </p>
         </div>
       </section>
     </div>
-    <Footer/>
+    <Footer />
   </div>
 </template>
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
 
 .product-spacer {
   max-width: 1200px;

@@ -17,98 +17,134 @@ const delivery = ref({
   terms_list: 'По Україні: 1-3 робочих дні\nКиїв: 1-2 робочих дні\nВіддалені регіони: 2-4 робочих дні',
 })
 
+const isLoading = ref(true)
+const error = ref(null)
+
 onMounted(async () => {
   try {
+    isLoading.value = true
     const response = await fetch('http://localhost:8000/api/settings/delivery')
+    if (!response.ok) throw new Error('Failed to fetch delivery data')
     const data = await response.json()
+    if (data.howto_list) data.howto_list = data.howto_list.replace(/\\n/g, '\n')
+    if (data.terms_list) data.terms_list = data.terms_list.replace(/\\n/g, '\n')
     delivery.value = data
-  } catch (e) {}
+  } catch (e) {
+    error.value = 'Не вдалося завантажити інформацію про доставку. Спробуйте пізніше.'
+    console.error('Error fetching delivery data:', e)
+  } finally {
+    isLoading.value = false
+  }
 })
-
 </script>
 
 <template>
-  <div>
   <div class="delivery-page">
     <section class="product-spacer">
-      <div class="delivery-header">
-        <h1 class="main-title">{{ delivery.title }}</h1>
-        <p class="main-description">
-          {{ delivery.description }}
-        </p>
+      <div v-if="isLoading" class="skeleton-loader">
+        <div class="delivery-header">
+          <div class="skeleton skeleton-title"></div>
+          <div class="skeleton skeleton-description"></div>
+        </div>
+        <div class="delivery-options">
+          <div class="delivery-option">
+            <div class="skeleton skeleton-option-title"></div>
+            <div class="skeleton skeleton-option-desc"></div>
+            <div class="skeleton skeleton-price"></div>
+          </div>
+          <div class="delivery-option">
+            <div class="skeleton skeleton-option-title"></div>
+            <div class="skeleton skeleton-option-desc"></div>
+            <div class="skeleton skeleton-price"></div>
+          </div>
+        </div>
+        <div class="additional-info">
+          <div class="info-card">
+            <div class="skeleton skeleton-section-title"></div>
+            <div class="skeleton skeleton-list-item"></div>
+            <div class="skeleton skeleton-list-item"></div>
+            <div class="skeleton skeleton-list-item"></div>
+          </div>
+          <div class="info-card">
+            <div class="skeleton skeleton-section-title"></div>
+            <div class="skeleton skeleton-list-item"></div>
+            <div class="skeleton skeleton-list-item"></div>
+            <div class="skeleton skeleton-list-item"></div>
+          </div>
+        </div>
       </div>
 
+      <div v-else>
+        <div class="delivery-header">
+          <h1 class="main-title">{{ delivery.title }}</h1>
+          <p class="main-description">{{ delivery.description }}</p>
+        </div>
 
-      <div class="delivery-options">
-        <div class="delivery-option">
-          <div class="option-header">
-            <div class="option-icon">📦</div>
-            <h3>{{ delivery.np_branch_title }}</h3>
-          </div>
-          <div class="option-content">
-            <div class="option-features">
-<!--              <span class="feature-tag">Зручно</span>-->
-<!--              <span class="feature-tag">Економно</span>-->
+        <div class="delivery-options">
+          <div class="delivery-option">
+            <div class="option-header">
+              <div class="option-icon">📦</div>
+              <h3>{{ delivery.np_branch_title }}</h3>
             </div>
-            <p class="option-description">
-              {{ delivery.np_branch_desc }}
-            </p>
-            <p class="pricing-info">
-              <strong>Вартість:</strong> {{ delivery.np_branch_price }}
-            </p>
-          </div>
-        </div>
-
-        <div class="delivery-option">
-          <div class="option-header">
-            <div class="option-icon">🏠</div>
-            <h3>{{ delivery.np_address_title }}</h3>
-          </div>
-          <div class="option-content">
-            <div class="option-features">
-<!--              <span class="feature-tag">Комфортно</span>-->
-<!--              <span class="feature-tag">До дверей</span>-->
+            <div class="option-content">
+              <div class="option-features">
+                <!-- <span class="feature-tag">Зручно</span> -->
+                <!-- <span class="feature-tag">Економно</span> -->
+              </div>
+              <p class="option-description">{{ delivery.np_branch_desc }}</p>
+              <p class="pricing-info">
+                <strong>Вартість:</strong> {{ delivery.np_branch_price }}
+              </p>
             </div>
-            <p class="option-description">
-              {{ delivery.np_address_desc }}
-            </p>
-            <p class="pricing-info">
-              <strong>Вартість:</strong> {{ delivery.np_address_price }}
-            </p>
+          </div>
+
+          <div class="delivery-option">
+            <div class="option-header">
+              <div class="option-icon">🏠</div>
+              <h3>{{ delivery.np_address_title }}</h3>
+            </div>
+            <div class="option-content">
+              <div class="option-features">
+                <!-- <span class="feature-tag">Комфортно</span> -->
+                <!-- <span class="feature-tag">До дверей</span> -->
+              </div>
+              <p class="option-description">{{ delivery.np_address_desc }}</p>
+              <p class="pricing-info">
+                <strong>Вартість:</strong> {{ delivery.np_address_price }}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="additional-info">
-        <div class="info-card">
-          <h4>{{ delivery.howto_title }}</h4>
-          <ol>
-            <li v-for="(item, idx) in delivery.howto_list.split('\n')" :key="idx">{{ item }}</li>
-          </ol>
+        <div class="additional-info">
+          <div class="info-card">
+            <h4>{{ delivery.howto_title }}</h4>
+            <ol>
+              <li v-for="(item, idx) in delivery.howto_list.split('\n')" :key="idx">{{ item }}</li>
+            </ol>
+          </div>
+
+          <div class="info-card">
+            <h4>{{ delivery.terms_title }}</h4>
+            <ul>
+              <li v-for="(item, idx) in delivery.terms_list.split('\n')" :key="idx">{{ item }}</li>
+            </ul>
+          </div>
         </div>
 
-        <div class="info-card">
-          <h4>{{ delivery.terms_title }}</h4>
-          <ul>
-            <li v-for="(item, idx) in delivery.terms_list.split('\n')" :key="idx">{{ item }}</li>
-          </ul>
+        <div class="contact-info">
+          <p>
+            <strong>Маєте питання?</strong> Зв'яжіться з нами, і ми з радістю допоможемо!
+          </p>
         </div>
-      </div>
-
-      <div class="contact-info">
-        <p>
-          <strong>Маєте питання?</strong> Зв'яжіться з нами, і ми з радістю допоможемо!
-        </p>
       </div>
     </section>
-  </div>
-    <Footer/>
+    <Footer />
   </div>
 </template>
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
 
 .product-spacer {
   max-width: 1200px;
@@ -186,12 +222,6 @@ onMounted(async () => {
   padding: 24px;
   transition: all 0.3s ease;
   background: #fafafa;
-}
-
-.delivery-option:hover {
-  border-color: #667eea;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
 }
 
 .option-header {
@@ -288,16 +318,103 @@ onMounted(async () => {
   color: #4a5568;
 }
 
-
 .contact-info p {
   font-size: 1.1rem;
   color: #000000;
   margin: 0;
 }
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.responsive-text {
+  font-size: clamp(0.9rem, 2vw, 1rem);
+  line-height: 1.6;
+}
+
+.section-divider {
+  border: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, #e2e8f0, transparent);
+  margin: 40px 0;
+}
+
+.error-message {
+  background: #fefcbf;
+  color: #744210;
+  padding: 16px;
+  border-radius: 8px;
+  border-left: 4px solid #ecc94b;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+/* Skeleton Loader */
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: 4px;
+  margin-bottom: 15px;
+}
+
+.skeleton-title {
+  width: 60%;
+  height: 2.5rem;
+  margin: 0 auto;
+}
+
+.skeleton-description {
+  width: 80%;
+  height: 1.2rem;
+  margin: 0 auto;
+}
+
+.skeleton-option-title {
+  width: 50%;
+  height: 1.5rem;
+}
+
+.skeleton-option-desc {
+  width: 100%;
+  height: 1rem;
+}
+
+.skeleton-price {
+  width: 70%;
+  height: 1rem;
+}
+
+.skeleton-section-title {
+  width: 50%;
+  height: 1.5rem;
+}
+
+.skeleton-list-item {
+  width: 100%;
+  height: 1rem;
+  margin-bottom: 10px;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
-
   .product-spacer {
     width: 500px;
   }
@@ -313,11 +430,9 @@ onMounted(async () => {
   .main-description {
     font-size: 1rem;
   }
-
-
 }
-@media (min-width: 380px) and (max-width: 768px) {
 
+@media (min-width: 380px) and (max-width: 768px) {
   .product-spacer {
     width: 400px;
   }
@@ -340,7 +455,6 @@ onMounted(async () => {
 }
 
 @media (min-width: 320px) and (max-width: 380px) {
-
   .product-spacer {
     width: 300px;
     max-width: 1400px;
@@ -362,5 +476,4 @@ onMounted(async () => {
     font-size: 1rem;
   }
 }
-
 </style>

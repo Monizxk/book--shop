@@ -96,15 +96,15 @@ export default {
     function handleSearch() {
       router.push({ name: 'SearchResults', query: { q: searchQuery.value } })
     }
-    
+
     const isCurrentRoute = (path) => {
       return route.path === path
     }
-    
+
     const cartCount = computed(() => {
       return cart.items.reduce((sum, item) => sum + item.quantity, 0)
     })
-    
+
     const toggleCartDrawer = () => {
       isCartOpen.value = !isCartOpen.value
       // Якщо відкриваємо кошик, закриваємо мобільне меню
@@ -112,7 +112,7 @@ export default {
         isMobileMenuOpen.value = false
       }
     }
-    
+
     const closeCartDrawer = () => {
       isCartOpen.value = false
     }
@@ -127,7 +127,7 @@ export default {
         // fallback: дефолтные значения уже заданы
       }
     }
-    
+
     // Закриваємо меню при зміні маршруту
     watch(() => route.path, () => {
       isMobileMenuOpen.value = false

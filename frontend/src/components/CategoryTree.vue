@@ -1,17 +1,17 @@
 <template>
   <div class="wrapper">
-  <v-container class="category-container" v-show="showCategoryTree" :style="{ maxWidth: '300px'}">
-    <div class="pa-4 text-center">
-      <h2 class="category-title">Категорії</h2>
-      <Tree
-          v-if="showCategoryTree"
-          v-model:expandedKeys="expandedKeys"
-          :value="categoryTree"
-          @node-select="handleNodeSelect"
-          @node-toggle="handleNodeToggle"
-      />
-    </div>
-  </v-container>
+    <v-container class="category-container" v-show="showCategoryTree" :style="{ maxWidth: '300px'}">
+      <div class="pa-4 text-center">
+        <h2 class="category-title">Категорії</h2>
+        <Tree
+            :value="categoryTree"
+            selectionMode="single"
+            :expandedKeys="expandedKeys"
+            @node-toggle="handleNodeToggle"
+            @node-select="handleNodeSelect"
+        />
+      </div>
+    </v-container>
 
     <v-container class="time-container" v-show="showTimeContainer">
       <div class="contact-option">
@@ -19,10 +19,15 @@
           <h3>Графік роботи</h3>
         </div>
         <div class="info-card">
-          <ul>
+          <ul v-if="!isLoadingWorkingHours">
             <li v-for="(item, idx) in workingHours" :key="idx">
               <strong>{{ item.label }}</strong> {{ item.hours }}
             </li>
+          </ul>
+          <ul v-else>
+            <li><div class="skeleton" style="width: 100%; height: 20px; margin-bottom: 10px;"></div></li>
+            <li><div class="skeleton" style="width: 100%; height: 20px; margin-bottom: 10px;"></div></li>
+            <li><div class="skeleton" style="width: 100%; height: 20px;"></div></li>
           </ul>
         </div>
       </div>
@@ -31,10 +36,9 @@
 </template>
 
 <script setup>
-import {ref, onMounted, watch, defineProps, defineEmits, onUnmounted} from 'vue'
+import { ref, onMounted, watch, defineProps, defineEmits, onUnmounted } from 'vue'
 import Tree from 'primevue/tree';
 import router from "../router.js";
-
 
 const emit = defineEmits(['select-category'])
 
@@ -49,6 +53,7 @@ const filteredProducts = ref([])
 const expandedKeys = ref({})
 const breadcrumbItems = ref([])
 const workingHours = ref([])
+const isLoadingWorkingHours = ref(true)
 
 const fetchCategories = async () => {
   try {
@@ -161,10 +166,10 @@ const updateBreadcrumbs = (category) => {
 const showCategoryTree = ref(true);
 
 async function fetchWorkingHours() {
+  isLoadingWorkingHours.value = true
   try {
     const response = await fetch('http://localhost:8000/api/settings')
     const data = await response.json()
-    // Собираем рабочие часы из settings
     workingHours.value = []
     if (data['working_hours.weekdays.enabled'] === '1') {
       workingHours.value.push({
@@ -185,12 +190,9 @@ async function fetchWorkingHours() {
       })
     }
   } catch (error) {
-    // fallback: показываем дефолтные
-    workingHours.value = [
-      { label: 'ПН, ВТ, СР, ЧТ, ПТ', hours: 'з 9:00 до 18:00' },
-      { label: 'Сб', hours: 'з 10:00 до 15:00' },
-      { label: 'Нд', hours: 'Вихідний' }
-    ]
+    console.error('Помилка при завантаженні графіку роботи:', error)
+  } finally {
+    isLoadingWorkingHours.value = false
   }
 }
 
@@ -229,11 +231,21 @@ onMounted(() => {
     document.removeEventListener("showTimeContainer", showTimeListener)
   })
 })
-
-
 </script>
 
 <style scoped>
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 .category-container {
   top: 90px;
   left: 0;
