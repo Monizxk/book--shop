@@ -15,10 +15,15 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        // Получаем только корневые категории с полной иерархией (5 уровней)
+        // Получаем только корневые видимые категории с полной иерархией (5 уровней)
         $categories = Category::whereNull('parent_id')
+            ->visible()
             ->with([
-                'children.children.children.children.children' // 5 уровней вложенности
+                'children' => function ($q) { $q->visible(); },
+                'children.children' => function ($q) { $q->visible(); },
+                'children.children.children' => function ($q) { $q->visible(); },
+                'children.children.children.children' => function ($q) { $q->visible(); },
+                'children.children.children.children.children' => function ($q) { $q->visible(); },
             ])
             ->get();
 
@@ -37,17 +42,16 @@ class CategoryController extends Controller
 
         $with = [];
         $current = 'children';
-
         for ($i = 1; $i < $depth; $i++) {
-            $with[] = $current;
+            $with[$current] = function ($q) { $q->visible(); };
             $current .= '.children';
         }
-
         if (!empty($with)) {
-            $with[] = $current;
+            $with[$current] = function ($q) { $q->visible(); };
         }
 
         $categories = Category::whereNull('parent_id')
+            ->visible()
             ->with($with)
             ->get();
 
@@ -65,7 +69,8 @@ class CategoryController extends Controller
         $level = min(5, max(1, $level)); // Ограничиваем от 1 до 5
 
         $categories = Category::byLevel($level)
-            ->with('parent', 'children')
+            ->visible()
+            ->with(['parent', 'children' => function ($q) { $q->visible(); }])
             ->get()
             ->map(function ($category) {
                 return [
@@ -89,7 +94,8 @@ class CategoryController extends Controller
      */
     public function getFlat()
     {
-        $categories = Category::with('parent')
+        $categories = Category::with(['parent'])
+            ->visible()
             ->get()
             ->map(function ($category) {
                 return [
@@ -99,7 +105,7 @@ class CategoryController extends Controller
                     'level' => $category->getLevel(),
                     'full_path' => $category->getFullPath(),
                     'can_have_children' => $category->canHaveChildren(),
-                    'children_count' => $category->children()->count(),
+                    'children_count' => $category->children()->visible()->count(),
                 ];
             });
 
@@ -115,7 +121,11 @@ class CategoryController extends Controller
     public function getChildren($parentId)
     {
         $parent = Category::with([
-            'children.children.children.children.children'
+            'children' => function ($q) { $q->visible(); },
+            'children.children' => function ($q) { $q->visible(); },
+            'children.children.children' => function ($q) { $q->visible(); },
+            'children.children.children.children' => function ($q) { $q->visible(); },
+            'children.children.children.children.children' => function ($q) { $q->visible(); },
         ])->findOrFail($parentId);
 
         return response()->json([

@@ -50,6 +50,11 @@ class ProductResource extends Resource
                     ->label('В наявності')
                     ->default(true),
 
+                Toggle::make('hidden')
+                    ->label('Сховати продукт')
+                    ->helperText('Сховані продукти не відображаються на сайті')
+                    ->default(false),
+
                 Select::make('category_id')
                     ->label('Категорія')
                     ->relationship('category', 'name')
@@ -75,6 +80,7 @@ class ProductResource extends Resource
                 TextColumn::make('title')->label('Назва')->searchable(),
                 TextColumn::make('price')->label('Ціна')->sortable(),
                 ToggleColumn::make('in_stock')->label('В наявності'),
+                ToggleColumn::make('hidden')->label('Схований'),
                 TextColumn::make('category.name')->label('Категорія')->sortable(),
                 ToggleColumn::make('is_on_way')->label('Готові до відправки'),
             ])

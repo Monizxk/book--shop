@@ -8,13 +8,14 @@ use Illuminate\Support\Str;
 
 class Product extends Model
 {
-    protected $fillable = ['title', 'images', 'price', 'is_on_sale', 'in_stock', 'category_id', 'is_on_way'];
+    protected $fillable = ['title', 'images', 'price', 'is_on_sale', 'in_stock', 'hidden', 'category_id', 'is_on_way'];
 
     protected $casts = [
         'images' => 'array',
         'in_stock' => 'boolean',
         'is_on_way' => 'boolean'
     ];
+
 
     public function category()
     {
@@ -36,5 +37,14 @@ class Product extends Model
                 ? $this->images[0]
                 : Storage::disk('public')->url($this->images[0]))
             : null;
+    }
+    public function scopeVisible($query)
+    {
+        return $query->where('hidden', false);
+    }
+
+    public function scopeHidden($query)
+    {
+        return $query->where('hidden', true);
     }
 }

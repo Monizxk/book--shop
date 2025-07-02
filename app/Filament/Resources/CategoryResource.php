@@ -47,6 +47,10 @@ class CategoryResource extends Resource
                         }
                     })
                     ->helperText('Выберите родительскую категорию (максимум 5 уровней)'),
+                Forms\Components\Toggle::make('hidden')
+                    ->label('Скрыть категорию')
+                    ->helperText('Скрытые категории не будут отображаться на сайте')
+                    ->default(false),
             ]);
     }
 
@@ -99,6 +103,13 @@ class CategoryResource extends Resource
                     ->falseIcon('heroicon-o-x-circle')
                     ->trueColor('success')
                     ->falseColor('danger'),
+                Tables\Columns\ToggleColumn::make('hidden')
+                    ->label('Hidden')
+                    ->onIcon('heroicon-o-eye-slash')
+                    ->offIcon('heroicon-o-eye')
+                    ->onColor('warning')
+                    ->offColor('success')
+                    ->sortable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('level')
@@ -145,10 +156,27 @@ class CategoryResource extends Resource
                         });
                     })
                     ->toggle(),
+                Tables\Filters\TernaryFilter::make('hidden')
+                    ->label('Visibility')
+                    ->placeholder('All categories')
+                    ->trueLabel('Hidden only')
+                    ->falseLabel('Visible only'),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('toggle_visibility')
+                    ->label(fn (Category $record): string => $record->hidden ? 'Show' : 'Hide')
+                    ->icon(fn (Category $record): string => $record->hidden ? 'heroicon-o-eye' : 'heroicon-o-eye-slash')
+                    ->color(fn (Category $record): string => $record->hidden ? 'success' : 'warning')
+                    ->action(function (Category $record) {
+                        $record->update(['hidden' => !$record->hidden]);
+                    })
+                    ->requiresConfirmation()
+                    ->modalHeading(fn (Category $record): string => $record->hidden ? 'Show Category' : 'Hide Category')
+                    ->modalDescription(fn (Category $record): string => $record->hidden
+                        ? 'Are you sure you want to show this category?'
+                        : 'Are you sure you want to hide this category?'),
                 Tables\Actions\DeleteAction::make()
                     ->before(function (Category $record) {
                         // Проверяем, есть ли дочерние категории
@@ -162,6 +190,30 @@ class CategoryResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\BulkAction::make('hide')
+                        ->label('Hide Selected')
+                        ->icon('heroicon-o-eye-slash')
+                        ->color('warning')
+                        ->action(function ($records) {
+                            foreach ($records as $record) {
+                                $record->update(['hidden' => true]);
+                            }
+                        })
+                        ->requiresConfirmation()
+                        ->modalHeading('Hide Categories')
+                        ->modalDescription('Are you sure you want to hide the selected categories?'),
+                    Tables\Actions\BulkAction::make('show')
+                        ->label('Show Selected')
+                        ->icon('heroicon-o-eye')
+                        ->color('success')
+                        ->action(function ($records) {
+                            foreach ($records as $record) {
+                                $record->update(['hidden' => false]);
+                            }
+                        })
+                        ->requiresConfirmation()
+                        ->modalHeading('Show Categories')
+                        ->modalDescription('Are you sure you want to show the selected categories?'),
                     Tables\Actions\DeleteBulkAction::make()
                         ->before(function ($records) {
                             foreach ($records as $record) {

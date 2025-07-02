@@ -14,6 +14,7 @@ class Category extends Model
     protected $fillable = [
         'name',
         'parent_id',
+        'hidden'
     ];
 
     /**
@@ -216,5 +217,14 @@ class Category extends Model
             default:
                 return $query;
         }
+    }
+    public function scopeVisible($query)
+    {
+        return $query->where('hidden', false);
+    }
+
+    public function scopeHidden($query)
+    {
+        return $query->where('hidden', true);
     }
 }
