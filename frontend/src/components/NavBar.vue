@@ -46,7 +46,7 @@
       <!-- Sidebar Overlay -->
       <div class="sidebar-overlay" :class="{ active: isMobileMenuOpen }" @click="toggleMobileMenu"></div>
     </div>
-    
+
     <!-- Висувний кошик -->
     <CartDrawer :isOpen="isCartOpen" @close="closeCartDrawer" />
   </section>

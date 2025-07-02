@@ -1,140 +1,140 @@
 <template>
   <div class="checkout-container">
     <h1 class="checkout-title">Оформлення замовлення</h1>
-    
+
     <div class="checkout-grid">
       <!-- Ліва колонка з формою -->
       <div class="checkout-form-container">
         <form @submit.prevent="submitOrder" class="checkout-form">
           <div class="form-section">
             <h2>Особисті дані</h2>
-            
+
             <div class="form-group">
               <label for="fullName">ПІБ *</label>
-              <input 
-                type="text" 
-                id="fullName" 
-                v-model="form.fullName" 
-                required 
-                placeholder="Введіть ваше повне ім'я"
+              <input
+                  type="text"
+                  id="fullName"
+                  v-model="form.fullName"
+                  required
+                  placeholder="Введіть ваше повне ім'я"
               />
               <div v-if="errors.fullName" class="error-message">{{ errors.fullName }}</div>
             </div>
-            
+
             <div class="form-group">
               <label for="email">Email *</label>
-              <input 
-                type="email" 
-                id="email" 
-                v-model="form.email" 
-                required 
-                placeholder="example@mail.com"
+              <input
+                  type="email"
+                  id="email"
+                  v-model="form.email"
+                  required
+                  placeholder="example@mail.com"
               />
               <div v-if="errors.email" class="error-message">{{ errors.email }}</div>
             </div>
-            
+
             <div class="form-group">
               <label for="phone">Телефон *</label>
-              <input 
-                type="tel" 
-                id="phone" 
-                v-model="form.phone" 
-                required 
-                placeholder="+380"
+              <input
+                  type="tel"
+                  id="phone"
+                  v-model="form.phone"
+                  required
+                  placeholder="+380"
               />
               <div v-if="errors.phone" class="error-message">{{ errors.phone }}</div>
             </div>
           </div>
-          
+
           <div class="form-section">
             <h2>Доставка</h2>
-            
+
             <div class="form-group">
               <label>Спосіб доставки *</label>
               <div class="delivery-options">
                 <label class="radio-label">
-                  <input 
-                    type="radio" 
-                    v-model="form.deliveryMethod" 
-                    value="novaPoshta" 
-                    required
+                  <input
+                      type="radio"
+                      v-model="form.deliveryMethod"
+                      value="novaPoshta"
+                      required
                   />
                   <span>Нова Пошта</span>
                 </label>
                 <label class="radio-label">
-                  <input 
-                    type="radio" 
-                    v-model="form.deliveryMethod" 
-                    value="ukrPoshta" 
-                    required
+                  <input
+                      type="radio"
+                      v-model="form.deliveryMethod"
+                      value="ukrPoshta"
+                      required
                   />
                   <span>Укрпошта</span>
                 </label>
                 <label class="radio-label">
-                  <input 
-                    type="radio" 
-                    v-model="form.deliveryMethod" 
-                    value="selfPickup" 
-                    required
+                  <input
+                      type="radio"
+                      v-model="form.deliveryMethod"
+                      value="selfPickup"
+                      required
                   />
                   <span>Самовивіз</span>
                 </label>
               </div>
               <div v-if="errors.deliveryMethod" class="error-message">{{ errors.deliveryMethod }}</div>
             </div>
-            
+
             <div v-if="form.deliveryMethod === 'selfPickup'" class="form-group">
               <p class="info-text">Самовивіз доступний за адресою: м. Київ, вул. Хрещатик, 1</p>
             </div>
-            
+
             <div v-if="form.deliveryMethod === 'novaPoshta' || form.deliveryMethod === 'ukrPoshta'">
               <div class="form-group">
                 <label for="city">Місто *</label>
-                <input 
-                  type="text" 
-                  id="city" 
-                  v-model="form.city" 
-                  required 
-                  placeholder="Введіть місто"
+                <input
+                    type="text"
+                    id="city"
+                    v-model="form.city"
+                    required
+                    placeholder="Введіть місто"
                 />
                 <div v-if="errors.city" class="error-message">{{ errors.city }}</div>
               </div>
-              
+
               <div class="form-group">
                 <label for="postOffice">Відділення / Поштомат *</label>
-                <input 
-                  type="text" 
-                  id="postOffice" 
-                  v-model="form.postOffice" 
-                  required 
-                  placeholder="Номер відділення або поштомату"
+                <input
+                    type="text"
+                    id="postOffice"
+                    v-model="form.postOffice"
+                    required
+                    placeholder="Номер відділення або поштомату"
                 />
                 <div v-if="errors.postOffice" class="error-message">{{ errors.postOffice }}</div>
               </div>
             </div>
           </div>
-          
+
           <div class="form-section">
             <h2>Оплата</h2>
-            
+
             <div class="form-group">
               <label>Спосіб оплати *</label>
               <div class="payment-options">
                 <label class="radio-label">
-                  <input 
-                    type="radio" 
-                    v-model="form.paymentMethod" 
-                    value="cashOnDelivery" 
-                    required
+                  <input
+                      type="radio"
+                      v-model="form.paymentMethod"
+                      value="cashOnDelivery"
+                      required
                   />
                   <span>Накладений платіж</span>
                 </label>
                 <label class="radio-label">
-                  <input 
-                    type="radio" 
-                    v-model="form.paymentMethod" 
-                    value="cardOnline" 
-                    required
+                  <input
+                      type="radio"
+                      v-model="form.paymentMethod"
+                      value="cardOnline"
+                      required
                   />
                   <span>Оплата картою онлайн</span>
                 </label>
@@ -142,20 +142,20 @@
               <div v-if="errors.paymentMethod" class="error-message">{{ errors.paymentMethod }}</div>
             </div>
           </div>
-          
+
           <div class="form-section">
             <h2>Коментар до замовлення</h2>
-            
+
             <div class="form-group">
-              <textarea 
-                id="comment" 
-                v-model="form.comment" 
-                placeholder="Додаткова інформація до замовлення (за бажанням)"
-                rows="3"
+              <textarea
+                  id="comment"
+                  v-model="form.comment"
+                  placeholder="Додаткова інформація до замовлення (за бажанням)"
+                  rows="3"
               ></textarea>
             </div>
           </div>
-          
+
           <div class="form-actions">
             <button type="submit" class="submit-btn" :disabled="isSubmitting">
               {{ isSubmitting ? 'Обробка...' : 'Підтвердити замовлення' }}
@@ -163,12 +163,12 @@
           </div>
         </form>
       </div>
-      
+
       <!-- Права колонка з інформацією про замовлення -->
       <div class="order-summary-container">
         <div class="order-summary">
           <h2>Ваше замовлення</h2>
-          
+
           <div class="order-items">
             <div v-for="item in cartItems" :key="item.id" class="order-item">
               <div class="item-info">
@@ -178,7 +178,7 @@
               <div class="item-total">{{ item.quantity * item.price }} ₴</div>
             </div>
           </div>
-          
+
           <div class="order-totals">
             <div class="total-row">
               <span>Товари:</span>
@@ -213,7 +213,7 @@ export default {
     const cartItems = ref([])
     const isSubmitting = ref(false)
     const deliveryCostFromAPI = ref(60)
-    
+
     const form = ref({
       fullName: '',
       email: '',
@@ -224,7 +224,7 @@ export default {
       paymentMethod: '',
       comment: ''
     })
-    
+
     const errors = ref({
       fullName: '',
       email: '',
@@ -234,7 +234,7 @@ export default {
       postOffice: '',
       paymentMethod: ''
     })
-    
+
     const subtotal = computed(() => {
       return cartItems.value.reduce((sum, item) => sum + (item.price * item.quantity), 0)
     })
@@ -261,64 +261,64 @@ export default {
       }
       return deliveryCostFromAPI.value
     })
-    
+
     const total = computed(() => {
       return subtotal.value + deliveryCost.value
     })
-    
+
     const validateForm = () => {
       let isValid = true
-      
+
       // Очистимо попередні помилки
       for (let key in errors.value) {
         errors.value[key] = ''
       }
-      
+
       // Перевірка ПІБ
       if (!form.value.fullName.trim()) {
         errors.value.fullName = 'Введіть ваше ПІБ'
         isValid = false
       }
-      
+
       // Перевірка email
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
       if (!form.value.email.trim() || !emailRegex.test(form.value.email)) {
         errors.value.email = 'Введіть коректний email'
         isValid = false
       }
-      
+
       // Перевірка телефону
       const phoneRegex = /^\+?[0-9]{10,13}$/
       if (!form.value.phone.trim() || !phoneRegex.test(form.value.phone)) {
         errors.value.phone = 'Введіть коректний номер телефону'
         isValid = false
       }
-      
+
       // Перевірка способу доставки
       if (!form.value.deliveryMethod) {
         errors.value.deliveryMethod = 'Виберіть спосіб доставки'
         isValid = false
       }
-      
+
       // Перевірка міста і відділення для доставки Новою Поштою або Укрпоштою
       if (form.value.deliveryMethod === 'novaPoshta' || form.value.deliveryMethod === 'ukrPoshta') {
         if (!form.value.city.trim()) {
           errors.value.city = 'Введіть місто'
           isValid = false
         }
-        
+
         if (!form.value.postOffice.trim()) {
           errors.value.postOffice = 'Введіть номер відділення'
           isValid = false
         }
       }
-      
+
       // Перевірка способу оплати
       if (!form.value.paymentMethod) {
         errors.value.paymentMethod = 'Виберіть спосіб оплати'
         isValid = false
       }
-      
+
       return isValid
     }
     console.log('form', form.value)
@@ -650,7 +650,7 @@ export default {
   .checkout-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .order-summary-container {
     order: -1;
   }

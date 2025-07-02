@@ -4,13 +4,13 @@
       <h3>Кошик</h3>
       <button class="close-btn" @click="close">×</button>
     </div>
-    
+
     <div class="cart-drawer-content">
       <div v-if="cartItems.length === 0" class="empty-cart">
         <i class="fas fa-shopping-cart cart-icon"></i>
         <p>Кошик порожній</p>
       </div>
-      
+
       <div v-else class="cart-items">
         <div v-for="item in cartItems" :key="item.id" class="cart-item">
           <div class="item-image">
@@ -26,10 +26,10 @@
         </div>
       </div>
     </div>
-    
+
     <div class="cart-drawer-footer" v-if="cartItems.length > 0">
       <div class="cart-total">
-        <span>Разом:</span> 
+        <span>Разом:</span>
         <span class="total-price">{{ total }} ₴</span>
       </div>
       <div class="cart-actions">
@@ -38,7 +38,7 @@
       </div>
     </div>
   </div>
-  
+
   <div class="cart-drawer-backdrop" :class="{ open: isOpen }" @click="close"></div>
 </template>
 

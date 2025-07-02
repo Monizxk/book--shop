@@ -2,7 +2,7 @@
   <div class="cart-page">
     <div class="container">
       <h1>Кошик</h1>
-      
+
       <div v-if="cartItems.length === 0" class="empty-cart">
         <div class="empty-cart-icon">
           <i class="fas fa-shopping-cart"></i>
@@ -12,7 +12,7 @@
           Перейти до магазину
         </router-link>
       </div>
-      
+
       <div v-else class="cart-content">
         <div class="cart-items">
           <div class="cart-header">
@@ -22,7 +22,7 @@
             <div class="total-col">Сума</div>
             <div class="action-col"></div>
           </div>
-          
+
           <div v-for="item in cartItems" :key="item.id" class="cart-item">
             <div class="product-col">
               <div class="product-image">
@@ -32,9 +32,9 @@
                 <div class="product-title">{{ item.title }}</div>
               </div>
             </div>
-            
+
             <div class="price-col">{{ item.price }} ₴</div>
-            
+
             <div class="quantity-col">
               <div class="quantity-control">
                 <button @click="decreaseQuantity(item)" class="qty-btn">-</button>
@@ -42,9 +42,9 @@
                 <button @click="increaseQuantity(item)" class="qty-btn">+</button>
               </div>
             </div>
-            
+
             <div class="total-col">{{ item.price * item.quantity }} ₴</div>
-            
+
             <div class="action-col">
               <button @click="remove(item.id)" class="remove-btn">
                 <i class="fas fa-trash"></i>
@@ -52,7 +52,7 @@
             </div>
           </div>
         </div>
-        
+
         <div class="cart-summary">
           <div class="cart-actions">
             <button @click="clearCart" class="clear-cart-btn">
@@ -62,7 +62,7 @@
               Продовжити покупки
             </router-link>
           </div>
-          
+
           <div class="cart-totals">
             <h3>Підсумок замовлення</h3>
             <div class="total-row">
@@ -108,16 +108,16 @@ export default {
       if (!imagePath) return ''
       return `http://localhost:8000/storage/${imagePath}`
     }
-    
+
     const updateCartItems = () => {
       cartItems.value = [...cart.items]
     }
-    
+
     const remove = (id) => {
       cart.remove(id)
       updateCartItems()
     }
-    
+
     const clearCart = () => {
       if (confirm('Ви дійсно хочете очистити кошик?')) {
         cart.clear()
@@ -136,7 +136,7 @@ export default {
       updateCartItems()
     }
 
-    
+
     onMounted(() => {
       console.log("2131221")
       updateCartItems()
@@ -156,7 +156,7 @@ export default {
       const showTimeEvent = new CustomEvent("showTimeContainer")
       document.dispatchEvent(showTimeEvent)
     })
-    
+
     return {
       cartItems,
       total,
@@ -405,39 +405,39 @@ h1 {
     gap: 10px;
     padding-bottom: 25px;
   }
-  
+
   .product-col {
     margin-bottom: 10px;
   }
-  
+
   .price-col, .quantity-col, .total-col, .action-col {
     display: flex;
     align-items: center;
   }
-  
+
   .price-col::before {
     content: "Ціна: ";
     width: 100px;
     font-weight: 500;
   }
-  
+
   .quantity-col::before {
     content: "Кількість: ";
     width: 100px;
     font-weight: 500;
   }
-  
+
   .total-col::before {
     content: "Сума: ";
     width: 100px;
     font-weight: 500;
   }
-  
+
   .action-col {
     justify-content: flex-end;
     margin-top: 10px;
   }
-  
+
   .cart-actions {
     flex-direction: column;
   }
