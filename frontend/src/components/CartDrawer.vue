@@ -292,7 +292,7 @@ export default {
 }
 
 .checkout-btn {
-  background-color: #4caf50;
+  background-color: #088178;
   color: white;
 }
 

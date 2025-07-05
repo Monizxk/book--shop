@@ -4,26 +4,45 @@
       <router-link to="/"><i class="fas fa-book"></i>Bookstore</router-link>
     </div>
 
-    <input
-        v-model="searchQuery"
-        @input="handleSearch"
-        @keyup.enter="handleSearch"
-        type="text"
-        placeholder="Пошук книг..."
-        class="search-input"
-    />
+    <!-- Десктопний пошук -->
+    <div class="search-container">
+      <input
+          v-model="searchQuery"
+          @input="handleSearch"
+          @keyup.enter="handleSearch"
+          type="text"
+          placeholder="Пошук книг..."
+          class="search-input"
+      />
+      <button @click="handleSearch" type="button">
+        <i class="fas fa-search"></i>
+      </button>
+    </div>
 
     <div class="nav-container">
       <div id="mobile">
         <i class="fa-solid fa-bars" style="font-size: 24px; color: #088178;" @click="toggleMobileMenu"></i>
       </div>
 
-
-
-
       <!-- Navbar/Sidebar -->
       <ul id="navbar" :class="{ active: isMobileMenuOpen }">
         <div class="sidebar-header"></div>
+
+        <!-- Мобільний пошук в sidebar -->
+<!--        <div class="mobile-search-container">-->
+<!--          <input-->
+<!--              v-model="searchQuery"-->
+<!--              @input="handleSearch"-->
+<!--              @keyup.enter="handleSearch"-->
+<!--              type="text"-->
+<!--              placeholder="Пошук книг..."-->
+<!--              class="mobile-search-input"-->
+<!--          />-->
+<!--          <button @click="handleSearch" type="button">-->
+<!--            <i class="fas fa-search"></i> Пошук-->
+<!--          </button>-->
+<!--        </div>-->
+
         <li><router-link :class="{ active: isCurrentRoute('/') }" to="/"><i class="fas fa-book-open"></i>Головна</router-link></li>
         <li><router-link :class="{ active: isCurrentRoute('/category') }" to="/category"><i class="fas fa-heart"></i>Каталог</router-link></li>
         <li><router-link :class="{ active: isCurrentRoute('/contact') }" to="/contact"><i class="fas fa-heart"></i>Контакти</router-link></li>
@@ -35,12 +54,11 @@
             <span class="cart-count" v-if="cartCount > 0">{{ cartCount }}</span>
           </a>
         </li>
-        <!-- Усередині <ul id="navbar"> додай внизу -->
+        <!-- Контакти внизу sidebar -->
         <li class="contact-nav">
           <i class="fas fa-phone-alt"></i> {{ contacts.phone }}<br />
           <i class="fas fa-envelope"></i> {{ contacts.email }}
         </li>
-
       </ul>
 
       <!-- Sidebar Overlay -->
@@ -61,7 +79,6 @@ import CartDrawer from './CartDrawer.vue'
 const searchQuery = ref('')
 const router = useRouter()
 
-
 export default {
   name: 'NavBar',
   components: {
@@ -79,12 +96,6 @@ export default {
       email: 'bookseller.in.ua@gmail.com'
     })
 
-    // function handleSearch() {
-    //   if (searchQuery.value.trim() !== '') {
-    //     router.push({ name: 'SearchResults', query: { q: searchQuery.value } })
-    //   }
-    // }
-
     const toggleMobileMenu = () => {
       isMobileMenuOpen.value = !isMobileMenuOpen.value
       // Якщо відкриваємо мобільне меню, закриваємо кошик
@@ -94,7 +105,13 @@ export default {
     }
 
     function handleSearch() {
-      router.push({ name: 'SearchResults', query: { q: searchQuery.value } })
+      if (searchQuery.value.trim() !== '') {
+        router.push({ name: 'SearchResults', query: { q: searchQuery.value } })
+        // Закриваємо мобільне меню після пошуку
+        if (isMobileMenuOpen.value) {
+          isMobileMenuOpen.value = false
+        }
+      }
     }
 
     const isCurrentRoute = (path) => {
@@ -116,7 +133,6 @@ export default {
     const closeCartDrawer = () => {
       isCartOpen.value = false
     }
-
 
     async function fetchContacts() {
       try {
@@ -155,12 +171,120 @@ export default {
 </script>
 
 <style>
-
-.search-input {
-  padding: 5px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  margin: 5px;
+/* Десктопний пошук */
+.search-container {
+  display: flex;
+  align-items: center;
+  position: relative;
+  margin: 0 20px;
 }
 
+.search-container .search-input {
+  width: 300px;
+  padding: 8px 50px 8px 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 25px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.3s ease;
+  margin: 0;
+}
+
+.search-container .search-input:focus {
+  border-color: #088178;
+}
+
+.search-container button {
+  position: absolute;
+  right: 5px;
+  background: #088178;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.3s ease;
+}
+
+.search-container button:hover {
+  background: #066e62;
+}
+
+/* Мобільний пошук в sidebar */
+.mobile-search-container {
+  display: none;
+  width: 100%;
+  padding: 20px 30px;
+  border-bottom: 2px solid #f0f0f0;
+  background: #f9f9f9;
+  position: sticky;
+  top: 0;
+  z-index: 1002;
+}
+
+.mobile-search-container .mobile-search-input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 25px;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.3s ease;
+  background: white;
+  margin: 0;
+}
+
+.mobile-search-container .mobile-search-input:focus {
+  border-color: #088178;
+}
+
+.mobile-search-container button {
+  width: 100%;
+  background: #088178;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 10px;
+  transition: background-color 0.3s ease;
+}
+
+.mobile-search-container button:hover {
+  background: #066e62;
+}
+
+/* Адаптивність */
+@media (max-width: 1250px) {
+  /* Ховаємо десктопний пошук */
+  .search-container {
+    display: none !important;
+  }
+
+  /* Показуємо мобільний пошук в sidebar */
+  .mobile-search-container {
+    display: block;
+  }
+}
+
+@media (max-width: 799px) {
+  /* Ховаємо десктопний пошук */
+  .search-container {
+    display: none !important;
+  }
+
+  /* Показуємо мобільний пошук в sidebar */
+  .mobile-search-container {
+    display: block;
+  }
+}
+
+@media (max-width: 480px) {
+  .mobile-search-container {
+    padding: 15px 20px;
+  }
+}
 </style>

@@ -523,7 +523,7 @@ export default {
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
-  border-color: #4caf50;
+  border-color: #0a9b90;
   outline: none;
 }
 
@@ -553,7 +553,7 @@ export default {
   background-color: #e8f5e9;
   padding: 12px;
   border-radius: 4px;
-  color: #2e7d32;
+  color: #0a9b90;
 }
 
 .form-actions {
@@ -563,7 +563,7 @@ export default {
 .submit-btn {
   width: 100%;
   padding: 14px;
-  background-color: #4caf50;
+  background-color: #0a9b90;
   color: white;
   border: none;
   border-radius: 4px;
@@ -574,7 +574,7 @@ export default {
 }
 
 .submit-btn:hover {
-  background-color: #45a049;
+  background-color: #1a454d;
 }
 
 .submit-btn:disabled {

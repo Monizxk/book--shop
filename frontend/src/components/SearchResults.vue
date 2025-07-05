@@ -575,8 +575,7 @@ function addToCart(product) {
 
 @media (min-width: 350px) and (max-width: 600px) {
   .product-spacer {
-    width: 300px;
-    max-width: 1400px;
+    width: 350px;
   }
 
   .products-grid {

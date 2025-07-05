@@ -265,13 +265,15 @@ onMounted(() => {
 }
 
 .product-spacer {
-  max-width: 1200px;
-  margin: 0 auto;
-  background: white;
-  border-radius: 16px;
-  padding: 20px;
-  font-family: 'Inter', sans-serif;
-  color: #2d3748;
+  background-color: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  padding: 16px;
+  width: 1250px;
+  max-width: 1400px; /* Збільшена максимальна ширина для десктопу */
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* Header Section */
@@ -313,7 +315,8 @@ onMounted(() => {
 }
 
 .contact-option {
-  width: 34rem;
+  flex: 1 1 calc(50% - 1.5rem); /* Кожен блок займає половину ширини мінус половина gap */
+  min-width: 250px; /* Мінімальна ширина для малих екранів */
   border: 2px solid #e2e8f0;
   border-radius: 12px;
   padding: 24px;

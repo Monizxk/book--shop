@@ -1,92 +1,129 @@
 <template>
-  <div class="product-spacer px-4 py-5">
-    <h2 class="mb-2">Розпродаж</h2>
+  <div class="main-content">
+    <!-- Перший контейнер - Розпродаж -->
+    <div class="product-spacer px-4 py-5">
+      <h2 class="mb-2">Розпродаж</h2>
+      <p class="text text-subtitle-1" v-if="!selectedCategory">
+        Тут ви знайдете великий вибір книг з різних категорій. Оберіть те, що вам до вподоби!
+      </p>
+      <p class="text text-subtitle-1" v-else>
+        Категорія: {{ selectedCategory.name }} <span v-if="filteredProducts.length">({{ filteredProducts.length }} товарів)</span>
+      </p>
 
-    <p class="text text-subtitle-1" v-if="!selectedCategory">
-      Тут ви знайдете великий вибір книг з різних категорій. Оберіть те, що вам до вподоби!
-    </p>
-    <p class="text text-subtitle-1" v-else>
-      Категорія: {{ selectedCategory.name }} <span v-if="filteredProducts.length">({{ filteredProducts.length }} товарів)</span>
-    </p>
+      <v-breadcrumbs
+          :items="breadcrumbItems"
+          divider=">"
+          class="mobile-hidden"
+      ></v-breadcrumbs>
 
-    <v-breadcrumbs
-        :items="breadcrumbItems"
-        divider=">"
-        class="mobile-hidden"
-    ></v-breadcrumbs>
-
-  <v-row>
-    <v-col
-        v-for="(product, index) in filteredProducts"
-        :key="index"
-        cols="12"
-        sm="6"
-        md="4"
-        lg="3"
-        class="book-product-container"
-    >
-      <div class="book-product">
-        <div class="book-image">
-          <img :src="getImageUrl(product.images[0])" alt="Зображення товару" class="book-cover" />
-        </div>
-        <div class="book-details">
-          <h3 class="book-title">{{ product.title }}</h3>
-          <div class="book-price-container">
-            <p class="book-price">{{ product.price }} грн.</p>
-            <span class="book-stock" v-if="product.in_stock !== false">
-              <span class="check-icon">✓</span> В наявності
-            </span>
-            <span class="book-stock out-of-stock" v-else>
-              Немає в наявності
-            </span>
+      <v-row v-if="isLoading">
+        <v-col
+            v-for="n in 8"
+            :key="n"
+            cols="12"
+            sm="6"
+            md="4"
+            lg="3"
+            class="book-product-container"
+        >
+          <v-skeleton-loader
+              type="card"
+              class="book-product"
+          ></v-skeleton-loader>
+        </v-col>
+      </v-row>
+      <v-row v-else>
+        <v-col
+            v-for="(product, index) in filteredProducts"
+            :key="index"
+            cols="12"
+            sm="6"
+            md="4"
+            lg="3"
+            class="book-product-container"
+        >
+          <div class="book-product">
+            <div class="book-image">
+              <img :src="getImageUrl(product.images[0])" alt="Зображення товару" class="book-cover" />
+            </div>
+            <div class="book-details">
+              <h3 class="book-title">{{ product.title }}</h3>
+              <div class="book-price-container">
+                <p class="book-price">{{ product.price }} грн.</p>
+                <span class="book-stock" v-if="product.in_stock !== false">
+                  <span class="check-icon">✓</span> В наявності
+                </span>
+                <span class="book-stock out-of-stock" v-else>
+                  Немає в наявності
+                </span>
+              </div>
+              <button @click="addToCart(product)" class="buy-button">Купити</button>
+            </div>
           </div>
-          <button @click="addToCart(product)" class="buy-button">Купити</button>
-        </div>
-      </div>
-    </v-col>
-    <v-col cols="12" v-if="filteredProducts.length === 0" class="text-center py-5">
-      <p>У розпродажі немає товарів</p>
-    </v-col>
-  </v-row>
+        </v-col>
+        <v-col cols="12" v-if="filteredProducts.length === 0" class="text-center py-5">
+          <p>У розпродажі немає товарів</p>
+        </v-col>
+      </v-row>
+    </div>
 
-      <div class="product-spacer px-4 py-5">
-    <h2 class="mb-2">Готові до відправки</h2>
+    <!-- Другий контейнер - Готові до відправки -->
+    <div class="product-spacer px-4 py-5">
+      <h2 class="mb-2">Готові до відправки</h2>
 
-  <v-row>
-    <v-col
-        v-for="(product, index) in filteredWayProducts"
-        :key="index"
-        cols="12"
-        sm="6"
-        md="4"
-        lg="3"
-        class="book-product-container"
-    >
-      <div class="book-product">
-        <div class="book-image">
-          <img :src="getImageUrl(product.images[0])" alt="Зображення товару" class="book-cover" />
-        </div>
-        <div class="book-details">
-          <h3 class="book-title">{{ product.title }}</h3>
-          <div class="book-price-container">
-            <p class="book-price">{{ product.price }} грн.</p>
-            <span class="book-stock" v-if="product.in_stock !== false">
-              <span class="check-icon">✓</span> В наявності
-            </span>
-            <span class="book-stock out-of-stock" v-else>
-              Немає в наявності
-            </span>
+      <v-row v-if="isLoading">
+        <v-col
+            v-for="n in 8"
+            :key="n"
+            cols="12"
+            sm="6"
+            md="4"
+            lg="3"
+            class="book-product-container"
+        >
+          <v-skeleton-loader
+              type="card"
+              class="book-product"
+          ></v-skeleton-loader>
+        </v-col>
+      </v-row>
+      <v-row v-else>
+        <v-col
+            v-for="(product, index) in filteredWayProducts"
+            :key="index"
+            cols="12"
+            sm="6"
+            md="4"
+            lg="3"
+            class="book-product-container"
+        >
+          <div class="book-product">
+            <div class="book-image">
+              <img :src="getImageUrl(product.images[0])" alt="Зображення товару" class="book-cover" />
+            </div>
+            <div class="book-details">
+              <h3 class="book-title">{{ product.title }}</h3>
+              <div class="book-price-container">
+                <p class="book-price">{{ product.price }} грн.</p>
+                <span class="book-stock" v-if="product.in_stock !== false">
+                  <span class="check-icon">✓</span> В наявності
+                </span>
+                <span class="book-stock out-of-stock" v-else>
+                  Немає в наявності
+                </span>
+              </div>
+              <button @click="addToCart(product)" class="buy-button">Купити</button>
+            </div>
           </div>
-          <button @click="addToCart(product)" class="buy-button">Купити</button>
-        </div>
-      </div>
-    </v-col>
-    <v-col cols="12" v-if="filteredWayProducts.length === 0" class="text-center py-5">
-      <p>У відправці немає товарів</p>
-    </v-col>
-  </v-row>
-      </div>
-  <Footer/>
+        </v-col>
+        <v-col cols="12" v-if="filteredWayProducts.length === 0" class="text-center py-5">
+          <p>У відправці немає товарів</p>
+        </v-col>
+      </v-row>
+    </div>
+
+    <!-- Футер -->
+    <Footer/>
   </div>
 </template>
 
@@ -265,6 +302,7 @@ onMounted(async () => {
   await fetchWayProducts()
 })
 </script>
+
 <style>
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
@@ -290,6 +328,7 @@ onMounted(async () => {
 .text {
   color: black;
 }
+
 
 
 .product-spacer {
@@ -320,7 +359,6 @@ onMounted(async () => {
   background-color: white;
   transition: box-shadow 0.3s ease;
   overflow: hidden;
-  max-width: 100%;
   box-sizing: border-box;
   width: 100%;
   overflow-wrap: break-word;
@@ -384,29 +422,29 @@ onMounted(async () => {
 .book-price {
   font-size: 20px;
   font-weight: 700;
-  color: #e53935 !important;
+  color: #ff5252 !important;
   margin: 0;
 }
 
 .book-stock {
   font-size: 14px;
-  color: #43a047 !important;
+  color: #0a9b90 !important;
   display: flex;
   align-items: center;
 }
 
 .check-icon {
-  color: #43a047 !important;
+  color: #088178 !important;
   font-weight: bold;
   margin-right: 5px;
 }
 
 .out-of-stock {
-  color: #e53935 !important;
+  color: #ff5252 !important;
 }
 
 .buy-button {
-  background-color: #232faf;
+  background-color: #088178;
   color: white !important;
   border: none;
   border-radius: 4px;
@@ -422,15 +460,16 @@ onMounted(async () => {
 
 
 .buy-button:hover {
-  background-color: #330050;
+  background-color: #1a454d;
 }
 
 
 /* Адаптивна сітка для різних розмірів екрану */
 @media (max-width: 1264px) {
   .product-spacer {
-    width: 1000px;
-    max-width: 1400px;
+    width: 100%;
+    max-width: 1200px;
+    padding: 20px;
   }
 
   .book-image {
@@ -475,6 +514,12 @@ onMounted(async () => {
     width: 800px;
     max-width: 1400px;
   }
+
+  .product-spacer-1 {
+    width: 800px;
+    max-width: 1400px;
+  }
+
   .book-image {
     width: 70%;
   }
@@ -509,15 +554,19 @@ onMounted(async () => {
 @media (min-width: 600px) and (max-width: 959px) {
   .product-spacer {
     width: 500px;
-    max-width: 1400px;
+    max-width: 800px;
   }
 }
 
 @media (min-width: 350px) and (max-width: 600px){
   .product-spacer {
     width: 300px;
-    max-width: 1400px;
   }
+
+  .product-spacer-1 {
+    width: 350px;
+  }
+
   .book-image {
     width: 70%;
   }
@@ -553,9 +602,15 @@ onMounted(async () => {
   .product-spacer {
     width: 280px;
   }
+
+  .product-spacer-1 {
+    width: 280px;
+  }
+
   .book-product {
     width: 280px;
   }
+
   .book-image {
     width: 60%;
   }

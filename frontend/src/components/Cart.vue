@@ -225,7 +225,7 @@ h1 {
 .continue-shopping-btn {
   display: inline-block;
   padding: 12px 24px;
-  background-color: #4caf50;
+  background-color: #0a9b90;
   color: white;
   text-decoration: none;
   border-radius: 4px;
@@ -316,7 +316,7 @@ h1 {
 .remove-btn {
   background: none;
   border: none;
-  color: #ff5252;
+  color: #ff5252 ;
   cursor: pointer;
   padding: 8px;
 
@@ -336,7 +336,7 @@ h1 {
 
 .clear-cart-btn {
   padding: 12px 24px;
-  background-color: #f44336;
+  background-color: #ff5252 ;
   color: white;
   border: none;
   border-radius: 4px;
@@ -378,7 +378,7 @@ h1 {
   width: 100%;
   padding: 12px;
   margin-top: 20px;
-  background-color: #4caf50;
+  background-color: #0a9b90;
   color: white;
   border: none;
   border-radius: 4px;

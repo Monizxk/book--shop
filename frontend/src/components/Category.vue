@@ -330,29 +330,29 @@ onMounted(() => {
 .book-price {
   font-size: 20px;
   font-weight: 700;
-  color: #e53935 !important;
+  color: #ff5252 !important;
   margin: 0;
 }
 
 .book-stock {
   font-size: 14px;
-  color: #43a047 !important;
+  color: #0a9b90 !important;
   display: flex;
   align-items: center;
 }
 
 .check-icon {
-  color: #43a047 !important;
+  color: #088178 !important;
   font-weight: bold;
   margin-right: 5px;
 }
 
 .out-of-stock {
-  color: #e53935 !important;
+  color: #ff5252 !important;
 }
 
 .buy-button {
-  background-color: #232faf;
+  background-color: #088178;
   color: white !important;
   border: none;
   border-radius: 4px;
@@ -372,6 +372,11 @@ onMounted(() => {
 }
 /* Адаптивна сітка для різних розмірів екрану */
 @media (max-width: 1264px) {
+
+  .mobile-hidden {
+    display: none !important;
+  }
+
   .product-spacer {
     width: 1000px;
     max-width: 1400px;
@@ -452,14 +457,14 @@ onMounted(() => {
 
 @media (min-width: 600px) and (max-width: 959px) {
   .product-spacer {
-    width: 500px;
+    width: 700px;
     max-width: 1400px;
   }
 }
 
 @media (min-width: 350px) and (max-width: 600px){
   .product-spacer {
-    width: 300px;
+    width: 350px;
     max-width: 1400px;
   }
   .book-image {

@@ -147,13 +147,15 @@ onMounted(async () => {
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 .product-spacer {
-  max-width: 1200px;
-  margin: 0 auto;
-  background: white;
-  border-radius: 16px;
-  padding: 20px;
-  font-family: 'Inter', sans-serif;
-  color: #2d3748;
+  background-color: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  padding: 16px;
+  width: 1250px;
+  max-width: 1400px; /* Збільшена максимальна ширина для десктопу */
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* Header Section */
@@ -309,8 +311,15 @@ onMounted(async () => {
 .info-card ol,
 .info-card ul {
   margin: 0;
-  padding-left: 20px;
+  padding-left: 0;      /* Убираем отступ */
+  list-style: none;     /* Убираем маркеры (точки, цифры) */
+  text-align: left;     /* Выравнивание текста по левому краю */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Элементы выровнены по левому краю */
+  justify-content: center; /* Центровка по вертикали внутри контейнера (если нужно) */
 }
+
 
 .info-card li {
   margin-bottom: 8px;

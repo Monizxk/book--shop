@@ -1,6 +1,20 @@
 <template>
   <div class="wrapper">
     <v-container class="category-container" v-show="showCategoryTree" :style="{ maxWidth: '300px'}">
+      <!-- Mobile Search Bar -->
+      <div class="mobile-search-container">
+        <input
+            v-model="searchQuery"
+            @input="handleSearch"
+            @keyup.enter="handleSearch"
+            type="text"
+            placeholder="Пошук книг..."
+            class="mobile-search-input"
+        />
+        <button @click="handleSearch" type="button">
+          <i class="fas fa-search"></i> Пошук
+        </button>
+      </div>
       <div class="pa-4 text-center">
         <h2 class="category-title">Категорії</h2>
         <Tree
@@ -54,6 +68,8 @@ const expandedKeys = ref({})
 const breadcrumbItems = ref([])
 const workingHours = ref([])
 const isLoadingWorkingHours = ref(true)
+const searchQuery = ref('')
+
 
 const fetchCategories = async () => {
   try {
@@ -196,6 +212,12 @@ async function fetchWorkingHours() {
   }
 }
 
+function handleSearch() {
+  if (searchQuery.value.trim() !== '') {
+    router.push({ name: 'SearchResults', query: { q: searchQuery.value } })
+  }
+}
+
 onMounted(() => {
   fetchCategories()
   fetchWorkingHours()
@@ -246,14 +268,17 @@ onMounted(() => {
   100% { background-position: -200% 0; }
 }
 
-.category-container {
-  top: 90px;
-  left: 0;
-  width: 620px;
-  padding: 20px;
-  overflow-y: auto;
-  z-index: 1000;
+.category-container,
+.contact-option {
+  background: #fafafa;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: none;
+  transition: all 0.3s ease;
+  z-index: 10;
 }
+
 
 .category-title {
   font-size: clamp(1.5rem, 5vw, 1.75rem);
@@ -263,13 +288,6 @@ onMounted(() => {
   display: block;
 }
 
-.contact-option {
-  border: 2px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 24px;
-  transition: all 0.3s ease;
-  background: #fafafa;
-}
 
 .contact-option:hover {
   border-color: #667eea;
@@ -344,21 +362,33 @@ onMounted(() => {
   display: block;
 }
 
+@media (max-width: 1200px) {
+  .category-container {
+    width: 300px;
+  }
+}
+
 
 @media (max-width: 768px) {
-  .category-container {
-    top: 50px;
-    left: 1rem;
-    width: 300px;
-    height: auto; /* Dynamic height based on content */
-    max-height: calc(100vh - 100px); /* Prevent overflow beyond viewport */
+  .category-container,
+  .contact-option {
+    position: relative;
+    top: auto;
+    left: auto;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 350px;
+    height: auto;
+    max-height: calc(100vh - 100px);
     overflow-y: auto;
-    background-color: #ffffff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    padding: 1rem;
-    z-index: 10;
+  }
+
+  .main-title {
+    font-size: 2rem;
+  }
+
+  .main-description {
+    font-size: 1rem;
   }
 
   .time-container {
@@ -366,73 +396,25 @@ onMounted(() => {
     margin: 0 auto;
   }
 
-
-}
-@media (max-width: 768px) {
-
   .product-spacer {
-    width: 500px;
+    width: 100%;
+    max-width: 500px;
   }
-
-  .contact-option {
-    width: 220px;
-  }
-
-  .main-title {
-    font-size: 2rem;
-  }
-
-  .main-description {
-    font-size: 1rem;
-  }
-
-
 }
+
 @media (min-width: 380px) and (max-width: 768px) {
-
-  .product-spacer {
-    width: 400px;
-  }
-
-  .contact-option {
-    width: 350px;
-  }
-
+  .category-container,
+  .contact-option,
   .info-card {
-    width: 350px;
-  }
-
-  .main-title {
-    font-size: 2rem;
-  }
-
-  .main-description {
-    font-size: 1rem;
+    max-width: 350px;
   }
 }
 
 @media (min-width: 320px) and (max-width: 380px) {
-
-  .product-spacer {
-    width: 300px;
-    max-width: 1400px;
-  }
-
-  .contact-option {
-    width: 260px;
-  }
-
+  .category-container,
+  .contact-option,
   .info-card {
-    width: 260px;
-  }
-
-  .main-title {
-    font-size: 2rem;
-  }
-
-  .main-description {
-    font-size: 1rem;
+    max-width: 260px;
   }
 }
-
 </style>
