@@ -1,7 +1,9 @@
 <template>
   <section id="header">
     <div class="logo">
-      <router-link to="/"><i class="fas fa-book"></i>Bookstore</router-link>
+      <router-link to='/' @click="handleLogoClick">
+        <i class="fas fa-book"></i>Bookstore
+      </router-link>
     </div>
 
     <!-- Десктопний пошук -->
@@ -75,9 +77,11 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { cart } from '../api/cart.js'
 import CartDrawer from './CartDrawer.vue'
+import { useCategories } from '../composables/useCategories'
 
 const searchQuery = ref('')
 const router = useRouter()
+const { collapseCategories } = useCategories()
 
 export default {
   name: 'NavBar',
@@ -142,6 +146,17 @@ export default {
       } catch (error) {
         // fallback: дефолтные значения уже заданы
       }
+    }
+
+    const handleLogoClick = (event) => {
+      event.preventDefault() // Запобігаємо стандартній навігації router-link
+      collapseCategories()
+
+      // Примусова навігація на головну сторінку
+      router.push('/').then(() => {
+        // Якщо потрібно перезавантажити сторінку
+        window.location.reload()
+      })
     }
 
     // Закриваємо меню при зміні маршруту

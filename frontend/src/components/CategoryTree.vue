@@ -53,9 +53,12 @@
 import { ref, onMounted, watch, defineProps, defineEmits, onUnmounted } from 'vue'
 import Tree from 'primevue/tree';
 import router from "../router.js";
+import {useRoute} from "vue-router";
+import { useCategories } from '../composables/useCategories'
 
 const emit = defineEmits(['select-category'])
-
+const { expandedKeys, collapseCategories } = useCategories()
+const route = useRoute()
 const showTimeContainer = ref(true)
 const isExpanded = ref(false)
 const isSelected = ref(false)
@@ -64,7 +67,6 @@ const categoryTree = ref([])
 const selectedCategory = ref(null)
 const products = ref([])
 const filteredProducts = ref([])
-const expandedKeys = ref({})
 const breadcrumbItems = ref([])
 const workingHours = ref([])
 const isLoadingWorkingHours = ref(true)
@@ -77,6 +79,15 @@ const fetchCategories = async () => {
     const data = await response.json()
     categories.value = data
     categoryTree.value = convertCategoriesToTreeData(data)
+
+    if (route.path === '/') {
+      expandedKeys.value = {}
+    } else {
+      expandedKeys.value = {}
+      categoryTree.value.forEach(node => {
+        expandedKeys.value[node.key] = true
+      })
+    }
   } catch (error) {
     console.error('Помилка при завантаженні категорій:', error)
   }
@@ -218,9 +229,19 @@ function handleSearch() {
   }
 }
 
+const handleLogoClick = () => {
+  expandedKeys.value = {}
+}
+
 onMounted(() => {
   fetchCategories()
   fetchWorkingHours()
+
+  watch(() => route.path, (newPath) => {
+    if (newPath === '/') {
+      expandedKeys.value = {}
+    }
+  })
 
   const hideCategoryListener = () => {
     console.log('hideCategoryTree triggered')

@@ -56,16 +56,17 @@ export default {
     }
   },
   setup(props, { emit }) {
-    const cartItems = ref([])
+    const cartItems = ref([...cart.items])
     const router = useRouter()
 
     const total = computed(() => {
       return cart.total
     })
 
-    const updateCartItems = () => {
-      cartItems.value = [...cart.items]
-    }
+    // Оновлюємо cartItems при змінах у cart.items
+    watch(() => cart.items, (newItems) => {
+      cartItems.value = [...newItems]
+    }, { deep: true, immediate: true })
 
     const close = () => {
       emit('close')
@@ -78,7 +79,6 @@ export default {
 
     const remove = (id) => {
       cart.remove(id)
-      updateCartItems()
     }
 
     const goToCart = () => {
@@ -91,15 +91,7 @@ export default {
       return `http://localhost:8000/storage/${imagePath}`
     }
 
-    // Оновлюємо список товарів при відкритті кошика
-    watch(() => props.isOpen, (newVal) => {
-      if (newVal) {
-        updateCartItems()
-      }
-    })
-
     onMounted(() => {
-      // Видаляємо виклики подій hideCategoryTree і hideTimeContainer
       console.log("CartDrawer mounted")
     })
 

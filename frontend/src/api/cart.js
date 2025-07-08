@@ -1,5 +1,6 @@
-// api/cart.js
-export const cart = {
+import { reactive } from 'vue'
+
+const cartState = reactive({
   items: JSON.parse(localStorage.getItem('cart') || '[]'),
 
   add(product) {
@@ -7,12 +8,12 @@ export const cart = {
     if (item) {
       item.quantity++
     } else {
-      this.items.push({ 
+      this.items.push({
         id: product.id,
         title: product.title,
         price: product.price,
         images: product.images || [],
-        quantity: 1 
+        quantity: 1
       })
     }
     this.save()
@@ -43,4 +44,6 @@ export const cart = {
   get total() {
     return this.items.reduce((sum, p) => sum + p.price * p.quantity, 0)
   }
-}
+})
+
+export const cart = cartState
