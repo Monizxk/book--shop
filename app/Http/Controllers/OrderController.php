@@ -9,6 +9,7 @@ use App\Models\Product; // Добавлен импорт Product
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class OrderController extends Controller
 {
@@ -48,6 +49,13 @@ class OrderController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+    public function exportPdf(Order $order)
+    {
+        $pdf = Pdf::loadView('pdf.order', ['order' => $order])
+            ->setPaper('a4', 'landscape'); // альбомний формат A4
+
+        return $pdf->download("order-{$order->id}.pdf");
     }
 
     /**

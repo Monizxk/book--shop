@@ -20,6 +20,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\Filter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class OrderResource extends Resource
 {
@@ -263,6 +264,13 @@ class OrderResource extends Resource
             ->defaultSort('created_at', 'desc');
     }
 
+    public function exportPdf(Order $order)
+    {
+        $pdf = Pdf::loadView('pdf.order', compact('order'))
+            ->setPaper('a4', 'portrait');
+
+        return $pdf->download("order-{$order->id}.pdf");
+    }
     public static function getRelations(): array
     {
         return [

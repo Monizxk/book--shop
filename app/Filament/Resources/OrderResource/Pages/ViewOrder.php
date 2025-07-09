@@ -20,6 +20,12 @@ class ViewOrder extends ViewRecord
     {
         return [
             Actions\EditAction::make(),
+
+            Actions\Action::make('pdf')
+                ->label('Export to PDF')
+                ->icon('heroicon-o-document-arrow-down')
+                ->url(fn ($record) => route('orders.pdf', $record))
+                ->openUrlInNewTab(),
         ];
     }
 
@@ -141,6 +147,7 @@ class ViewOrder extends ViewRecord
                                     ->weight('bold'),
                             ]),
                     ]),
+
             ]);
     }
 }

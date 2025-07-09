@@ -48,11 +48,25 @@ class Order extends Model
 
     public function generateOrderNumber()
     {
-        do {
-            $orderNumber = 'ORD-' . date('Y') . '-' . strtoupper(Str::random(6));
-        } while (self::where('order_number', $orderNumber)->exists());
+        $date = date('Y-m-d');
+        $baseOrderNumber = 'ORD-' . $date;
 
-        return $orderNumber;
+        // Проверяем, есть ли ордеры за текущую дату
+        $existingOrders = self::where('order_number', 'like', $baseOrderNumber . '%')->get();
+
+        if ($existingOrders->isEmpty()) {
+            // Если ордеров за эту дату нет, возвращаем базовый номер
+            return $baseOrderNumber;
+        }
+
+        // Находим максимальный суффикс среди существующих ордеров
+        $maxSuffix = $existingOrders->map(function ($order) use ($baseOrderNumber) {
+            $suffix = str_replace($baseOrderNumber . '-', '', $order->order_number);
+            return is_numeric($suffix) ? (int)$suffix : 0;
+        })->max();
+
+        // Формируем следующий номер ордера
+        return $baseOrderNumber . '-' . ($maxSuffix + 1);
     }
 
     /**
