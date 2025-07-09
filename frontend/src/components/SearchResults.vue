@@ -235,7 +235,7 @@ function addToCart(product) {
   width: 50px;
   height: 50px;
   border: 4px solid #f3f3f3;
-  border-top: 4px solid #232faf;
+  border-top: 4px solid #088178;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -280,7 +280,7 @@ function addToCart(product) {
 }
 
 .retry-button {
-  background-color: #232faf;
+  background-color: #088178;
   color: white !important;
   border: none;
   border-radius: 6px;
@@ -459,7 +459,7 @@ function addToCart(product) {
 }
 
 .buy-button {
-  background-color: #232faf;
+  background-color: #088178;
   color: white !important;
   border: none;
   border-radius: 4px;

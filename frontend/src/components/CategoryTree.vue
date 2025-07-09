@@ -291,6 +291,8 @@ onMounted(() => {
 
 .category-container,
 .contact-option {
+  width: 300px;
+  position: sticky;
   background: #fafafa;
   border: 2px solid #e2e8f0;
   border-radius: 12px;
@@ -311,6 +313,7 @@ onMounted(() => {
 
 
 .contact-option:hover {
+  position: sticky;
   border-color: #667eea;
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
@@ -384,8 +387,10 @@ onMounted(() => {
 }
 
 @media (max-width: 1200px) {
-  .category-container {
+  .category-container,
+  .contact-option {
     width: 300px;
+    position: sticky;
   }
 }
 
