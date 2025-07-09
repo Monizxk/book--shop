@@ -158,6 +158,11 @@
       <path value="$PROJECT_DIR$/backend/vendor/fruitcake/php-cors" />
       <path value="$PROJECT_DIR$/backend/vendor/sebastian/code-unit-reverse-lookup" />
       <path value="$PROJECT_DIR$/backend/vendor/sebastian/object-reflector" />
+      <path value="$PROJECT_DIR$/backend/vendor/dompdf/dompdf" />
+      <path value="$PROJECT_DIR$/backend/vendor/dompdf/php-svg-lib" />
+      <path value="$PROJECT_DIR$/backend/vendor/dompdf/php-font-lib" />
+      <path value="$PROJECT_DIR$/backend/vendor/barryvdh/laravel-dompdf" />
+      <path value="$PROJECT_DIR$/backend/vendor/sabberworm/php-css-parser" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.2" />
