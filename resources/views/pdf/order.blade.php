@@ -14,6 +14,7 @@
             font-family: DejaVu Sans, sans-serif;
             font-size: 10px;
             line-height: 1;
+            padding: 30px; /* Поля по краях сторінки */
         }
 
         .container {
@@ -23,6 +24,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
+            margin-bottom: 10px;
         }
 
         td, th {
@@ -45,6 +47,10 @@
             @page {
                 size: A4 landscape;
                 margin: 0;
+            }
+
+            body {
+                padding: 20px; /* Зберігаємо відступи і при друку */
             }
         }
     </style>
@@ -77,15 +83,13 @@
     </tr>
 </table>
 
-<br>
-
 <table>
     <thead>
     <tr>
-        <th>Назва</th>
-        <th>Кільк.</th>
-        <th>Ціна</th>
-        <th>Сума</th>
+        <th style="width: 80%;">Назва</th>
+        <th style="width: 5%;">Кільк.</th>
+        <th style="width: 5%;">Ціна</th>
+        <th style="width: 10%;">Сума</th>
     </tr>
     </thead>
     <tbody>
@@ -100,13 +104,11 @@
     </tbody>
 </table>
 
-<br>
-
 <table>
     <tr>
         <td><strong>Разом:</strong> {{ number_format($order->subtotal, 2) }} грн</td>
-        <td><strong>Доставка:</strong> {{ number_format($order->delivery_cost, 2) }} грн</td>
-        <td><strong>Загальна сума:</strong> {{ number_format($order->total, 2) }} грн</td>
+{{--        <td><strong>Доставка:</strong> {{ number_format($order->delivery_cost, 2) }} грн</td>--}}
+{{--        <td><strong>Загальна сума:</strong> {{ number_format($order->total, 2) }} грн</td>--}}
     </tr>
 </table>
 </body>
