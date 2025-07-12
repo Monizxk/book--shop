@@ -69,7 +69,6 @@ export function useBreadcrumbs() {
         ]
     }
 
-    // Оновлення breadcrumbs на основі поточного маршруту
     const updateBreadcrumbsFromRoute = () => {
         const categoryId = route.params.categoryId || route.params.id
 
@@ -81,7 +80,6 @@ export function useBreadcrumbs() {
         }
     }
 
-    // Computed для поточної категорії
     const currentCategory = computed(() => {
         const categoryId = route.params.categoryId || route.params.id
         return categoryId ? findCategoryById(categories.value, categoryId) : null
