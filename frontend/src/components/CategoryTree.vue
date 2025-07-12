@@ -102,7 +102,7 @@ const fetchCategories = async () => {
 const convertCategoriesToTreeData = (cats, prefix = '0', parentPath = []) => {
   return cats.map((cat, index) => {
     const currentKey = `${prefix}-${index}`
-    const currentPath = [...parentPath, cat.name]
+    const currentPath = [...parentPath, { id: cat.id, name: cat.name }]
 
     return {
       key: currentKey,
@@ -186,7 +186,7 @@ const updateBreadcrumbs = (category) => {
     const pathItems = category.path.map((item, index, arr) => ({
       title: item.name,
       disabled: index === arr.length - 1,
-      href: index === arr.length - 1 ? '' : `/catalog/${item.id}`
+      href: index === arr.length - 1 ? '' : `/category?categoryId=${item.id}`
     }))
 
     breadcrumbItems.value = [

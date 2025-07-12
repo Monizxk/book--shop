@@ -111,7 +111,7 @@ async function fetchContacts() {
 function convertCategoriesToTreeData(categories, prefix = '0', parentPath = []) {
   return categories.map((cat, index) => {
     const currentKey = `${prefix}-${index}`
-    const currentPath = [...parentPath, cat.name]
+    const currentPath = [...parentPath, { id: cat.id, name: cat.name }]
     return {
       key: currentKey,
       label: cat.name,
@@ -145,14 +145,14 @@ function collectChildrenIds(children, ids) {
 
 function updateBreadcrumbs(category) {
   if (category?.path) {
-    const pathItems = category.path.map((name, index, arr) => ({
-      title: name,
+    const pathItems = category.path.map((item, index, arr) => ({
+      title: item.name,
       disabled: index === arr.length - 1,
-      href: index === arr.length - 1 ? '' : `/catalog/${name.toLowerCase()}`
+      href: index === arr.length - 1 ? '' : `/category?categoryId=${item.id}`
     }))
     breadcrumbItems.value = [
       { title: 'Головна', disabled: false, href: '/' },
-      { title: 'Каталог', disabled: false, href: '/catalog' },
+      { title: 'Каталог', disabled: false, href: '/category' },
       ...pathItems
     ]
   }

@@ -140,9 +140,10 @@
 <script setup>
 import {defineComponent, onMounted, ref, watch} from "vue";
 import Footer from "./Footer.vue";
-import {useRoute} from "vue-router";
+import {useRoute, useRouter} from "vue-router";
 import {cart} from "../api/cart.js";
 const route = useRoute()
+const router = useRouter()
 const categoryId = route.query.categoryId
 import Tree from 'primevue/tree'
 import CategoryTree from "./CategoryTree.vue"
@@ -240,7 +241,7 @@ async function fetchWayProducts() {
 function convertCategoriesToTreeData(categories, prefix = '0', parentPath = []) {
   return categories.map((cat, index) => {
     const currentKey = `${prefix}-${index}`
-    const currentPath = [...parentPath, cat.name]
+    const currentPath = [...parentPath, { id: cat.id, name: cat.name }]
 
     return {
       key: currentKey,
@@ -275,15 +276,15 @@ function getCategoryWithChildrenIds(categoryId) {
 
 function updateBreadcrumbs(category) {
   if (category && category.path) {
-    const pathItems = category.path.map((name, index, arr) => ({
-      title: name,
+    const pathItems = category.path.map((item, index, arr) => ({
+      title: item.name,
       disabled: index === arr.length - 1, // Останній елемент неактивний
-      href: index === arr.length - 1 ? '' : `/catalog/${name.toLowerCase()}`
+      href: index === arr.length - 1 ? '' : `/category?categoryId=${item.id}`
     }))
 
     breadcrumbItems.value = [
       { title: 'Головна', disabled: false, href: '/' },
-      { title: 'Каталог', disabled: false, href: '/catalog' },
+      { title: 'Каталог', disabled: false, href: '/category' },
       ...pathItems
     ]
   }
@@ -306,7 +307,14 @@ function filterSaleProductsByCategory(category) {
 
 function handleBreadcrumbClick(item) {
   if (!item.disabled && item.href) {
-    router.push(item.href)
+    if (item.href.startsWith('/category?categoryId=')) {
+      // Для категорій використовуємо query параметр
+      const categoryId = item.href.split('=')[1]
+      router.push({ path: '/category', query: { categoryId } })
+    } else {
+      // Для інших посилань використовуємо звичайну навігацію
+      router.push(item.href)
+    }
   }
 }
 

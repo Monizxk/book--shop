@@ -15,7 +15,17 @@
           :items="breadcrumbItems"
           divider=">"
           class="mobile-hidden"
-      ></v-breadcrumbs>
+      >
+        <template v-slot:item="{ item }">
+          <v-breadcrumb-item
+              :disabled="item.disabled"
+              :href="item.href"
+              @click.prevent="handleBreadcrumbClick(item)"
+          >
+            {{ item.title }}
+          </v-breadcrumb-item>
+        </template>
+      </v-breadcrumbs>
     </div>
 
     <v-row>
@@ -63,11 +73,12 @@ import Footer from "./Footer.vue"
 import Tree from 'primevue/tree'
 import CategoryTree from "./CategoryTree.vue"
 import { cart } from '../api/cart.js'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
 
 
 const route = useRoute()
+const router = useRouter()
 const categoryId = route.query.categoryId
 
 const props = defineProps(['selectedCategory', 'categoryId'])
@@ -88,6 +99,18 @@ watch(() => props.selectedCategory, (newCategory) => {
   if (newCategory) {
     updateBreadcrumbs(newCategory)
     filterProductsByCategory(newCategory)
+  } else {
+    resetFilter()
+  }
+})
+
+watch(() => route.query.categoryId, (newCategoryId) => {
+  if (newCategoryId) {
+    const category = findCategoryById(categories.value, parseInt(newCategoryId))
+    if (category) {
+      updateBreadcrumbs(category)
+      filterProductsByCategory(category)
+    }
   } else {
     resetFilter()
   }
@@ -124,18 +147,22 @@ const fetchCategories = async () => {
     }
 
     // Оновлюємо breadcrumbs для поточної категорії
-    updateBreadcrumbsFromRoute()
+    // updateBreadcrumbsFromRoute() // Видаляємо звідси, оскільки викликаємо в onMounted
   } catch (error) {
     console.error('Помилка при завантаженні категорій:', error)
   }
 }
 
 const updateBreadcrumbsFromRoute = () => {
-  const categoryId = route.params.categoryId || route.params.id
+  const categoryId = route.query.categoryId || route.params.categoryId || route.params.id
 
   if (categoryId) {
-    const category = findCategoryById(categories.value, categoryId)
-    updateBreadcrumbs(category)
+    const category = findCategoryById(categories.value, parseInt(categoryId))
+    if (category) {
+      updateBreadcrumbs(category)
+    } else {
+      updateBreadcrumbs(null)
+    }
   } else {
     updateBreadcrumbs(null)
   }
@@ -155,7 +182,7 @@ async function fetchProducts() {
 function convertCategoriesToTreeData(categories, prefix = '0', parentPath = []) {
   return categories.map((cat, index) => {
     const currentKey = `${prefix}-${index}`
-    const currentPath = [...parentPath, cat.name]
+    const currentPath = [...parentPath, { id: cat.id, name: cat.name }]
 
     return {
       key: currentKey,
@@ -199,7 +226,22 @@ function collectChildrenIds(children, ids) {
 }
 
 const findCategoryById = (categories, id) => {
-  return categories.find(cat => cat.id === parseInt(id))
+  const searchInCategories = (cats) => {
+    for (const cat of cats) {
+      if (cat.id === parseInt(id)) {
+        return cat
+      }
+      if (cat.children) {
+        const found = searchInCategories(cat.children)
+        if (found) {
+          return found
+        }
+      }
+    }
+    return null
+  }
+  
+  return searchInCategories(categories)
 }
 
 const buildCategoryPath = (category, allCategories) => {
@@ -225,32 +267,55 @@ const buildCategoryPath = (category, allCategories) => {
 }
 
 
+const resetBreadcrumbs = () => {
+  breadcrumbItems.value = [
+    { title: 'Головна', disabled: false, href: '/' },
+    { title: 'Каталог', disabled: false, href: '/category' }
+  ]
+}
+
 const updateBreadcrumbs = (category) => {
   if (!category) {
     resetBreadcrumbs()
     return
   }
 
-  const path = buildCategoryPath(category, categories.value)
-
-  const pathItems = path.map((item, index) => {
-    const isLast = index === path.length - 1
-    const href = isLast
-        ? ''
-        : '/category?categoryId=' + item.id
-
-    return {
+  if (category.path) {
+    // Використовуємо path з дерева категорій
+    const pathItems = category.path.map((item, index, arr) => ({
       title: item.name,
-      disabled: isLast,
-      href
-    }
-  })
+      disabled: index === arr.length - 1,
+      href: index === arr.length - 1 ? '' : `/category?categoryId=${item.id}`
+    }))
 
-  breadcrumbItems.value = [
-    { title: 'Головна', disabled: false, href: '/' },
-    { title: 'Каталог', disabled: false, href: '/category' },
-    ...pathItems
-  ]
+    breadcrumbItems.value = [
+      { title: 'Головна', disabled: false, href: '/' },
+      { title: 'Каталог', disabled: false, href: '/category' },
+      ...pathItems
+    ]
+  } else {
+    // Fallback до старої логіки
+    const path = buildCategoryPath(category, categories.value)
+
+    const pathItems = path.map((item, index) => {
+      const isLast = index === path.length - 1
+      const href = isLast
+          ? ''
+          : '/category?categoryId=' + item.id
+
+      return {
+        title: item.name,
+        disabled: isLast,
+        href
+      }
+    })
+
+    breadcrumbItems.value = [
+      { title: 'Головна', disabled: false, href: '/' },
+      { title: 'Каталог', disabled: false, href: '/category' },
+      ...pathItems
+    ]
+  }
 }
 
 
@@ -258,7 +323,7 @@ function resetFilter() {
   filteredProducts.value = products.value
   breadcrumbItems.value = [
     { title: 'Головна', disabled: false, href: '/' },
-    { title: 'Каталог', disabled: false, href: '/catalog' }
+    { title: 'Каталог', disabled: false, href: '/category' }
   ]
 }
 
@@ -269,9 +334,25 @@ function filterProductsByCategory(category) {
   )
 }
 
-onMounted(() => {
-  fetchCategories()
-  fetchProducts()
+function handleBreadcrumbClick(item) {
+  if (!item.disabled && item.href) {
+    if (item.href.startsWith('/category?categoryId=')) {
+      // Для категорій використовуємо query параметр
+      const categoryId = item.href.split('=')[1]
+      router.push({ path: '/category', query: { categoryId } })
+    } else {
+      // Для інших посилань використовуємо звичайну навігацію
+      router.push(item.href)
+    }
+  }
+}
+
+onMounted(async () => {
+  await fetchCategories()
+  await fetchProducts()
+  
+  // Оновлюємо breadcrumbs після завантаження всіх даних
+  updateBreadcrumbsFromRoute()
 })
 </script>
 
