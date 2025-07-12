@@ -8,6 +8,11 @@ import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 import PrimeVue from 'primevue/config'
 import '@fortawesome/fontawesome-free/css/all.min.css'
+import 'primeicons/primeicons.css'
+import Aura from '@primevue/themes/aura'
+
+import '@fortawesome/fontawesome-free/css/all.min.css'
+import 'primeicons/primeicons.css'
 
 const vuetify = createVuetify({
     components,
@@ -17,5 +22,14 @@ const vuetify = createVuetify({
 const app = createApp(App)
 app.use(router)
 app.use(vuetify)
-app.use(PrimeVue)
+app.use(PrimeVue , {
+    theme: {
+        preset: Aura,
+        options: {
+            prefix: 'p',
+            darkModeSelector: 'system',
+            cssLayer: false
+        }
+    }
+})
 app.mount('#app')

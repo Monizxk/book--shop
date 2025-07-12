@@ -1,6 +1,6 @@
 <template>
   <div class="wrapper">
-    <v-container class="category-container" v-show="showCategoryTree" :style="{ maxWidth: '300px'}">
+    <v-container class="category-container" v-show="showCategoryTree" :style="{ maxWidth: '300px' }">
       <!-- Mobile Search Bar -->
       <div class="mobile-search-container">
         <input
@@ -15,14 +15,20 @@
           <i class="fas fa-search"></i> Пошук
         </button>
       </div>
+
       <div class="pa-4 text-center">
-        <h2 class="category-title">Категорії</h2>
+        <router-link to="/category" @click="handleLogoClick">
+          <h2 class="category-title">Каталог</h2>
+        </router-link>
+
         <Tree
+            v-model:selectionKeys="selectedKey"
+            v-model:expandedKeys="expandedKeys"
             :value="categoryTree"
             selectionMode="single"
-            :expandedKeys="expandedKeys"
-            @node-toggle="handleNodeToggle"
+            class="custom-tree"
             @node-select="handleNodeSelect"
+            @node-toggle="handleNodeToggle"
         />
       </div>
     </v-container>
@@ -70,7 +76,7 @@ const filteredProducts = ref([])
 const breadcrumbItems = ref([])
 const workingHours = ref([])
 const isLoadingWorkingHours = ref(true)
-const searchQuery = ref('')
+const selectedKey = ref({});
 
 
 const fetchCategories = async () => {
@@ -177,15 +183,15 @@ const collectChildrenIds = (children, ids) => {
 
 const updateBreadcrumbs = (category) => {
   if (category && category.path) {
-    const pathItems = category.path.map((name, index, arr) => ({
-      title: name,
+    const pathItems = category.path.map((item, index, arr) => ({
+      title: item.name,
       disabled: index === arr.length - 1,
-      href: index === arr.length - 1 ? '' : `/catalog/${name.toLowerCase()}`
+      href: index === arr.length - 1 ? '' : `/catalog/${item.id}`
     }))
 
     breadcrumbItems.value = [
       { title: 'Головна', disabled: false, href: '/' },
-      { title: 'Каталог', disabled: false, href: '/catalog' },
+      { title: 'Каталог', disabled: false, href: '/category' },
       ...pathItems
     ]
   }
@@ -233,6 +239,7 @@ const handleLogoClick = () => {
   expandedKeys.value = {}
 }
 
+
 onMounted(() => {
   fetchCategories()
   fetchWorkingHours()
@@ -276,7 +283,7 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
+<style>
 .skeleton {
   background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
   background-size: 200% 100%;
@@ -287,6 +294,161 @@ onMounted(() => {
 @keyframes shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
+}
+
+.v-breadcrumbs {
+  color: black;
+}
+
+/* Контент вузла */
+.custom-tree .p-tree-node-content {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  margin: 2px 0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-left: 3px solid transparent;
+  position: relative;
+  flex-direction: row-reverse;
+}
+
+/* Ховер ефект */
+.custom-tree .p-tree-node-content:hover {
+  background-color: #f5f5f5 !important;
+  border-left-color: #90caf9 !important;
+}
+
+/* Активна/вибрана категорія */
+.custom-tree .p-tree-node-content.p-tree-node-selected {
+  background-color: #e3f2fd !important;
+  color: #1976d2 !important;
+  font-weight: 600 !important;
+  border-left-color: #2196f3 !important;
+  border-left-width: 4px !important;
+}
+
+/* Кнопка розгортання/згортання */
+.custom-tree .p-tree-node-toggle-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+}
+
+.custom-tree .p-tree-node-toggle-button:hover {
+  background-color: #e0e0e0 !important;
+}
+
+.custom-tree .p-tree-node-toggle-icon {
+  width: 12px;
+  height: 12px;
+  color: #757575;
+}
+
+/* Лейбл вузла */
+.custom-tree .p-tree-node-label {
+  flex: 1;
+  padding: 0 4px;
+  font-size: 14px;
+  line-height: 1.4;
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Іконка вузла */
+.custom-tree .p-tree-node-icon {
+  margin-right: 8px;
+  width: 16px;
+  height: 16px;
+}
+
+/* Відступи для вкладених категорій (зменшено) */
+.custom-tree .p-tree-node {
+  padding-left: 0;
+}
+
+.custom-tree .p-tree-node { padding-left: 0px; }
+
+.custom-tree .p-tree-node-children .p-tree-node > .p-tree-node-content {
+  padding-left: 0;
+}
+
+.custom-tree .p-tree-node-children .p-tree-node-children .p-tree-node > .p-tree-node-content {
+  padding-left: 56px;
+}
+
+.custom-tree .p-tree-node-children .p-tree-node-children .p-tree-node-children .p-tree-node > .p-tree-node-content {
+  padding-left: 80px;
+}
+
+.custom-tree .p-tree-node-children .p-tree-node-children .p-tree-node-children .p-tree-node-children .p-tree-node > .p-tree-node-content {
+  padding-left: 104px;
+}
+
+/* Візуальні лінії для показу ієрархії */
+.custom-tree .p-tree-node-content::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      #bdbdbd 20%,
+      #bdbdbd 80%,
+      transparent 100%
+  );
+  opacity: 0.3;
+}
+
+/* Анімація при розгортанні/згортанні */
+.custom-tree .p-tree-node-children {
+  transition: all 0.3s ease;
+}
+
+/* Стилі для фокусу (доступність) */
+.custom-tree .p-tree-node-content:focus {
+  outline: 2px solid #2196f3 !important;
+  outline-offset: 2px !important;
+}
+
+/* Додаткові стилі для кращого вигляду */
+.custom-tree .p-tree-node-content.p-tree-node-selected .p-tree-node-label {
+  color: inherit !important;
+}
+
+/* Responsive стилі */
+@media (max-width: 768px) {
+  .custom-tree {
+    max-width: 100%;
+  }
+
+  .custom-tree .p-tree-node-content {
+    padding: 10px 8px;
+  }
+
+  .custom-tree .p-tree-node[aria-level="2"] > .p-tree-node-content {
+    padding-left: 20px; /* Зменшено з 24px */
+  }
+
+  .custom-tree .p-tree-node[aria-level="3"] > .p-tree-node-content {
+    padding-left: 32px; /* Зменшено з 40px */
+  }
+
+  .custom-tree .p-tree-node[aria-level="4"] > .p-tree-node-content {
+    padding-left: 44px; /* Зменшено з 56px */
+  }
 }
 
 .category-container,
@@ -300,6 +462,59 @@ onMounted(() => {
   box-shadow: none;
   transition: all 0.3s ease;
   z-index: 10;
+  color: black;
+}
+
+.p-tree .p-treenode {
+  padding-left: 0.5rem;
+}
+
+.p-tree .p-treenode .p-treenode-children > .p-treenode {
+  padding-left: 1rem; /* Зменшено з 1.5rem */
+}
+
+.p-tree .p-treenode .p-treenode-children > .p-treenode .p-treenode-children > .p-treenode {
+  padding-left: 1.5rem; /* Зменшено з 2.5rem */
+}
+
+.p-treenode-content.p-highlight {
+  background-color: #e0f3ff; /* Світло-синій фон */
+  color: #004a77; /* Текст */
+  font-weight: bold;
+  border-radius: 6px;
+}
+
+.category-container,
+.contact-option {
+  width: 300px;
+  position: sticky;
+  background: #fafafa;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: none;
+  transition: all 0.3s ease;
+  z-index: 10;
+  color: black;
+}
+
+.p-tree .p-treenode {
+  padding-left: 0.5rem;
+}
+
+.p-tree .p-treenode .p-treenode-children > .p-treenode {
+  padding-left: 1.5rem;
+}
+
+.p-tree .p-treenode .p-treenode-children > .p-treenode .p-treenode-children > .p-treenode {
+  padding-left: 2.5rem;
+}
+
+.p-treenode-content.p-highlight {
+  background-color: #e0f3ff; /* Світло-синій фон */
+  color: #004a77; /* Текст */
+  font-weight: bold;
+  border-radius: 6px;
 }
 
 

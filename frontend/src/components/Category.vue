@@ -106,14 +106,38 @@ function addToCart(product) {
   });
 }
 
-async function fetchCategories() {
+const fetchCategories = async () => {
   try {
     const response = await fetch('http://localhost:8000/api/categories')
     const data = await response.json()
     categories.value = data
     categoryTree.value = convertCategoriesToTreeData(data)
+
+    // Розгортаємо дерево залежно від поточного маршруту
+    if (route.path === '/') {
+      expandedKeys.value = {}
+    } else {
+      expandedKeys.value = {}
+      categoryTree.value.forEach(node => {
+        expandedKeys.value[node.key] = true
+      })
+    }
+
+    // Оновлюємо breadcrumbs для поточної категорії
+    updateBreadcrumbsFromRoute()
   } catch (error) {
     console.error('Помилка при завантаженні категорій:', error)
+  }
+}
+
+const updateBreadcrumbsFromRoute = () => {
+  const categoryId = route.params.categoryId || route.params.id
+
+  if (categoryId) {
+    const category = findCategoryById(categories.value, categoryId)
+    updateBreadcrumbs(category)
+  } else {
+    updateBreadcrumbs(null)
   }
 }
 
@@ -174,21 +198,61 @@ function collectChildrenIds(children, ids) {
   })
 }
 
-function updateBreadcrumbs(category) {
-  if (category && category.path) {
-    const pathItems = category.path.map((name, index, arr) => ({
-      title: name,
-      disabled: index === arr.length - 1,
-      href: index === arr.length - 1 ? '' : `/catalog/${name.toLowerCase()}`
-    }))
-
-    breadcrumbItems.value = [
-      { title: 'Головна', disabled: false, href: '/' },
-      { title: 'Каталог', disabled: false, href: '/catalog' },
-      ...pathItems
-    ]
-  }
+const findCategoryById = (categories, id) => {
+  return categories.find(cat => cat.id === parseInt(id))
 }
+
+const buildCategoryPath = (category, allCategories) => {
+  const path = []
+  let current = category
+
+  while (current) {
+    path.unshift({
+      id: current.id,
+      name: current.name,
+      slug: current.slug || current.id
+    })
+
+    if (current.parent_id) {
+      // Знаходимо батьківську категорію
+      current = allCategories.find(cat => cat.id === current.parent_id)
+    } else {
+      current = null
+    }
+  }
+
+  return path
+}
+
+
+const updateBreadcrumbs = (category) => {
+  if (!category) {
+    resetBreadcrumbs()
+    return
+  }
+
+  const path = buildCategoryPath(category, categories.value)
+
+  const pathItems = path.map((item, index) => {
+    const isLast = index === path.length - 1
+    const href = isLast
+        ? ''
+        : '/category?categoryId=' + item.id
+
+    return {
+      title: item.name,
+      disabled: isLast,
+      href
+    }
+  })
+
+  breadcrumbItems.value = [
+    { title: 'Головна', disabled: false, href: '/' },
+    { title: 'Каталог', disabled: false, href: '/category' },
+    ...pathItems
+  ]
+}
+
 
 function resetFilter() {
   filteredProducts.value = products.value

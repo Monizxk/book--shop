@@ -263,17 +263,17 @@ function collectChildrenIds(children, ids) {
   })
 }
 
-function updateBreadcrumbs(category) {
+const updateBreadcrumbs = (category) => {
   if (category && category.path) {
-    const pathItems = category.path.map((name, index, arr) => ({
-      title: name,
+    const pathItems = category.path.map((item, index, arr) => ({
+      title: item.name,
       disabled: index === arr.length - 1,
-      href: index === arr.length - 1? '' : `/catalog/${name.toLowerCase()}`
+      href: index === arr.length - 1 ? '' : `/category/${item.id}`
     }))
 
     breadcrumbItems.value = [
       { title: 'Головна', disabled: false, href: '/' },
-      { title: 'Розпродаж', disabled: false, href: '/' },
+      { title: 'Каталог', disabled: false, href: '/category' },
       ...pathItems
     ]
   }
