@@ -304,7 +304,6 @@ onMounted(() => {
 .custom-tree .p-tree-node-content {
   display: flex;
   align-items: center;
-  padding: 8px 12px;
   margin: 2px 0;
   border-radius: 6px;
   cursor: pointer;
@@ -317,15 +316,15 @@ onMounted(() => {
 /* Ховер ефект */
 .custom-tree .p-tree-node-content:hover {
   background-color: #f5f5f5 !important;
-  border-left-color: #90caf9 !important;
+  border-left-color: #003f3b !important;
 }
 
 /* Активна/вибрана категорія */
 .custom-tree .p-tree-node-content.p-tree-node-selected {
   background-color: #e3f2fd !important;
-  color: #1976d2 !important;
+  color: #088178 !important;
   font-weight: 600 !important;
-  border-left-color: #2196f3 !important;
+  border-left-color: #088178 !important;
   border-left-width: 4px !important;
 }
 
@@ -379,19 +378,19 @@ onMounted(() => {
 .custom-tree .p-tree-node { padding-left: 0px; }
 
 .custom-tree .p-tree-node-children .p-tree-node > .p-tree-node-content {
-  padding-left: 0;
+  padding-left: 35px;
 }
 
 .custom-tree .p-tree-node-children .p-tree-node-children .p-tree-node > .p-tree-node-content {
-  padding-left: 56px;
+  padding-left: 70px;
 }
 
 .custom-tree .p-tree-node-children .p-tree-node-children .p-tree-node-children .p-tree-node > .p-tree-node-content {
-  padding-left: 80px;
+  padding-left: 90px;
 }
 
 .custom-tree .p-tree-node-children .p-tree-node-children .p-tree-node-children .p-tree-node-children .p-tree-node > .p-tree-node-content {
-  padding-left: 104px;
+  padding-left: 120px;
 }
 
 /* Візуальні лінії для показу ієрархії */

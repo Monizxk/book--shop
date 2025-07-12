@@ -14,7 +14,17 @@
           :items="breadcrumbItems"
           divider=">"
           class="mobile-hidden"
-      ></v-breadcrumbs>
+      >
+        <template v-slot:item="{ item }">
+          <v-breadcrumb-item
+              :disabled="item.disabled"
+              :href="item.href"
+              @click.prevent="handleBreadcrumbClick(item)"
+          >
+            {{ item.title }}
+          </v-breadcrumb-item>
+        </template>
+      </v-breadcrumbs>
 
       <v-row v-if="isLoading">
         <v-col
@@ -188,11 +198,21 @@ async function fetchSaleProducts() {
   }
 }
 
+function collectChildrenIds(children, ids = []) {
+  children.forEach(child => {
+    ids.push(child.id)
+    if (child.children) {
+      collectChildrenIds(child.children, ids)
+    }
+  })
+  return ids
+}
+
 async function fetchCategories() {
   try {
     const response = await fetch('http://localhost:8000/api/categories')
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(`HTTP error! status: ${response.status}`)
     }
     const data = await response.json()
     categories.value = data
@@ -238,14 +258,12 @@ function convertCategoriesToTreeData(categories, prefix = '0', parentPath = []) 
 function getCategoryWithChildrenIds(categoryId) {
   const ids = [categoryId]
 
-  const findChildrenIds = (categories) => {
-    categories.forEach(category => {
-      if (category.id === categoryId) {
-        if (category.children) {
-          collectChildrenIds(category.children, ids)
-        }
-      } else if (category.children) {
-        findChildrenIds(category.children)
+  const findChildrenIds = (cats) => {
+    cats.forEach(cat => {
+      if (cat.id === categoryId && cat.children) {
+        collectChildrenIds(cat.children, ids)
+      } else if (cat.children) {
+        findChildrenIds(cat.children)
       }
     })
   }
@@ -254,33 +272,25 @@ function getCategoryWithChildrenIds(categoryId) {
   return ids
 }
 
-function collectChildrenIds(children, ids) {
-  children.forEach(child => {
-    ids.push(child.id)
-    if (child.children) {
-      collectChildrenIds(child.children, ids)
-    }
-  })
-}
 
-const updateBreadcrumbs = (category) => {
+function updateBreadcrumbs(category) {
   if (category && category.path) {
-    const pathItems = category.path.map((item, index, arr) => ({
-      title: item.name,
-      disabled: index === arr.length - 1,
-      href: index === arr.length - 1 ? '' : `/category/${item.id}`
+    const pathItems = category.path.map((name, index, arr) => ({
+      title: name,
+      disabled: index === arr.length - 1, // Останній елемент неактивний
+      href: index === arr.length - 1 ? '' : `/catalog/${name.toLowerCase()}`
     }))
 
     breadcrumbItems.value = [
       { title: 'Головна', disabled: false, href: '/' },
-      { title: 'Каталог', disabled: false, href: '/category' },
+      { title: 'Каталог', disabled: false, href: '/catalog' },
       ...pathItems
     ]
   }
 }
 
 function resetFilter() {
-  filteredProducts.value = saleProducts.value // Reset to sale products, not all products
+  filteredProducts.value = saleProducts.value
   breadcrumbItems.value = [
     { title: 'Головна', disabled: false, href: '/' },
     { title: 'Розпродаж', disabled: true, href: '/' }
@@ -289,10 +299,15 @@ function resetFilter() {
 
 function filterSaleProductsByCategory(category) {
   const ids = getCategoryWithChildrenIds(category.id)
-  // Filter sale products by category, not all products
   filteredProducts.value = saleProducts.value.filter(product =>
       ids.includes(product.category_id)
   )
+}
+
+function handleBreadcrumbClick(item) {
+  if (!item.disabled && item.href) {
+    router.push(item.href)
+  }
 }
 
 // Single onMounted hook
