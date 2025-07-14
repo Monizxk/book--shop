@@ -682,7 +682,7 @@ onMounted(async () => {
     font-size: 2.25rem;
   }
 }
-/* Адаптивні розміри шрифтів */
+
 h2 {
   font-size: clamp(1.25rem, 4vw, 1.75rem);
 }
