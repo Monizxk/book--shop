@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 
 class Product extends Model
 {
+    protected $appends = ['image_url'];
     protected $fillable = ['title', 'images', 'price', 'is_on_sale', 'in_stock', 'hidden', 'category_id', 'is_on_way'];
 
     protected $casts = [
@@ -30,13 +31,16 @@ class Product extends Model
     /**
      * Отримання URL першого зображення для продукту (якщо воно є)
      */
-    public function getImageUrlAttribute(): ?string
+    public function getImageUrlAttribute(): string
     {
-        return isset($this->images[0])
-            ? (Str::startsWith($this->images[0], 'http')
+        if (isset($this->images[0])) {
+            return Str::startsWith($this->images[0], 'http')
                 ? $this->images[0]
-                : Storage::disk('public')->url($this->images[0]))
-            : null;
+                : Storage::disk('public')->url($this->images[0]);
+        }
+
+        // fallback-зображення (має бути в public/images)
+        return asset('storage/products/no-image.png');
     }
     public function scopeVisible($query)
     {

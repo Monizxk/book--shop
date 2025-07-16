@@ -15,6 +15,7 @@ use Filament\Forms\Components\Select;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use App\Models\Product;
+use Illuminate\Support\Facades\Storage;
 
 class ProductResource extends Resource
 {
@@ -39,7 +40,6 @@ class ProductResource extends Resource
                     ->reorderable()
                     ->preserveFilenames()
                     ->visibility('private'),
-
 
                 TextInput::make('price')
                     ->numeric()
@@ -90,17 +90,90 @@ class ProductResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
+            ])
+            ->headerActions([
+                Tables\Actions\Action::make('importProducts')
+                    ->label('Імпорт Excel')
+                    ->icon('heroicon-o-document-arrow-up')
+                    ->form([
+                        FileUpload::make('file')
+                            ->label('Excel файл')
+                            ->acceptedFileTypes(['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel'])
+                            ->required()
+                            ->disk('local')
+                            ->directory('imports'),
+
+                        Select::make('default_category_id')
+                            ->label('Дефолтна категорія (опціонально)')
+                            ->relationship('category', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->helperText('Якщо не вказано, категорія буде визначена автоматично'),
+                    ])
+                    ->action(function (array $data) {
+                        try {
+                            // Отримуємо ім'я файлу
+                            $fileName = is_array($data['file']) ? $data['file'][0] : $data['file'];
+
+                            // Перевіряємо чи файл існує в storage
+                            if (!Storage::disk('local')->exists($fileName)) {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Помилка')
+                                    ->body('Файл не знайдено в storage: ' . $fileName)
+                                    ->danger()
+                                    ->send();
+                                return;
+                            }
+
+                            // Отримуємо повний шлях до файлу
+                            $filePath = Storage::disk('local')->path($fileName);
+
+                            // Виконуємо імпорт
+                            $import = new \App\Imports\ProductImport($data['default_category_id'] ?? null);
+                            $import->import($filePath);
+
+                            // Видаляємо тимчасовий файл
+                            Storage::disk('local')->delete($fileName);
+
+                            \Filament\Notifications\Notification::make()
+                                ->title('Імпорт завершено успішно!')
+                                ->success()
+                                ->send();
+
+                        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+                            $failures = $e->failures();
+                            $errors = [];
+
+                            foreach ($failures as $failure) {
+                                $errors[] = "Рядок {$failure->row()}: " . implode(', ', $failure->errors());
+                            }
+
+                            \Filament\Notifications\Notification::make()
+                                ->title('Помилка валідації')
+                                ->body('Знайдено помилки: ' . implode('; ', array_slice($errors, 0, 3)))
+                                ->danger()
+                                ->send();
+
+                        } catch (\Exception $e) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Помилка імпорту')
+                                ->body($e->getMessage())
+                                ->danger()
+                                ->send();
+                        }
+                    })
+                    ->modalSubmitActionLabel('Імпортувати')
+                    ->modalCancelActionLabel('Скасувати')
+                    ->color('success')
             ]);
     }
 
     public static function getPages(): array
     {
         return [
-                'index' => \App\Filament\Resources\ProductResource\Pages\ListProducts::route('/'),
-                'create' => \App\Filament\Resources\ProductResource\Pages\CreateProduct::route('/create'),
-                'edit' => \App\Filament\Resources\ProductResource\Pages\EditProduct::route('/{record}/edit'),
+            'index' => \App\Filament\Resources\ProductResource\Pages\ListProducts::route('/'),
+            'create' => \App\Filament\Resources\ProductResource\Pages\CreateProduct::route('/create'),
+            'edit' => \App\Filament\Resources\ProductResource\Pages\EditProduct::route('/{record}/edit'),
         ];
     }
 }
-
-
