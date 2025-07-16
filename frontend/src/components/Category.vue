@@ -40,7 +40,7 @@
       >
         <div class="book-product">
           <div class="book-image">
-            <img :src="getImageUrl(product.images[0])" alt="Зображення товару" class="book-cover" />
+            <img :src="product.image_url || getImageUrl(product.images && product.images[0])" alt="Зображення товару" class="book-cover" />
           </div>
           <div class="book-details">
             <h3 class="book-title">{{ product.title }}</h3>
@@ -117,8 +117,8 @@ watch(() => route.query.categoryId, (newCategoryId) => {
 })
 
 function getImageUrl(imagePath) {
-  if (!imagePath) return ''
-  return `http://localhost:8000/storage/${imagePath}`
+  if (!imagePath) return 'http://localhost:8000/images/no-image.png'
+  return imagePath.startsWith('http') ? imagePath : `http://localhost:8000/storage/${imagePath}`
 }
 
 function addToCart(product) {
@@ -174,6 +174,8 @@ async function fetchProducts() {
     const data = await response.json()
     products.value = data
     filteredProducts.value = data
+    console.log('products:', products.value)
+    console.log('products:', products.value.map(p => p.category_id))
   } catch (error) {
     console.error('Помилка при завантаженні продуктів:', error)
   }
@@ -321,6 +323,7 @@ const updateBreadcrumbs = (category) => {
 
 function resetFilter() {
   filteredProducts.value = products.value
+  console.log('resetFilter called, filteredProducts:', filteredProducts.value)
   breadcrumbItems.value = [
     { title: 'Головна', disabled: false, href: '/' },
     { title: 'Каталог', disabled: false, href: '/category' }
@@ -329,9 +332,12 @@ function resetFilter() {
 
 function filterProductsByCategory(category) {
   const ids = getCategoryWithChildrenIds(category.id)
+  console.log('ids for filter:', ids)
+  console.log('products before filter:', products.value)
   filteredProducts.value = products.value.filter(product =>
       ids.includes(product.category_id)
   )
+  console.log('filteredProducts:', filteredProducts.value)
 }
 
 function handleBreadcrumbClick(item) {
@@ -348,6 +354,7 @@ function handleBreadcrumbClick(item) {
 }
 
 onMounted(async () => {
+  console.log('onMounted called')
   await fetchCategories()
   await fetchProducts()
   

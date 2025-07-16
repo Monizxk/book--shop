@@ -193,10 +193,10 @@ body {
 }
 
 .container {
-  max-width: 1200px; /* або інша бажана ширина */
+  max-width: 1200px;
   width: 100%;
-  margin: 0 auto; /* горизонтальне центрування */
-  padding: 0 15px; /* відступи для адаптивності */
+  margin: 0 auto;
+  padding: 0 15px;
 }
 
 h1 {
