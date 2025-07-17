@@ -141,7 +141,7 @@ class CategoryResource extends Resource
                 Tables\Filters\Filter::make('can_have_children')
                     ->label('Can Have Children')
                     ->query(function (Builder $query) {
-                        // Фильтр для категорий уровней 1-4 (которые могут иметь детей)
+
                         $query->where(function ($q) {
                             $q->whereNull('parent_id') // Level 1
                             ->orWhereHas('parent', function ($q) {
@@ -179,7 +179,7 @@ class CategoryResource extends Resource
                         : 'Are you sure you want to hide this category?'),
                 Tables\Actions\DeleteAction::make()
                     ->before(function (Category $record) {
-                        // Проверяем, есть ли дочерние категории
+
                         if ($record->children()->count() > 0) {
                             throw new \Exception('Cannot delete category with subcategories. Please delete subcategories first.');
                         }
@@ -241,7 +241,7 @@ class CategoryResource extends Resource
     public static function getRelations(): array
     {
         return [
-            // При необходимости можно добавить relation managers
+
         ];
     }
 }

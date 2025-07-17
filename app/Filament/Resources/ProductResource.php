@@ -112,10 +112,9 @@ class ProductResource extends Resource
                     ])
                     ->action(function (array $data) {
                         try {
-                            // Отримуємо ім'я файлу
+
                             $fileName = is_array($data['file']) ? $data['file'][0] : $data['file'];
 
-                            // Перевіряємо чи файл існує в storage
                             if (!Storage::disk('local')->exists($fileName)) {
                                 \Filament\Notifications\Notification::make()
                                     ->title('Помилка')
@@ -125,14 +124,11 @@ class ProductResource extends Resource
                                 return;
                             }
 
-                            // Отримуємо повний шлях до файлу
                             $filePath = Storage::disk('local')->path($fileName);
 
-                            // Виконуємо імпорт
                             $import = new \App\Imports\ProductImport($data['default_category_id'] ?? null);
                             $import->import($filePath);
 
-                            // Видаляємо тимчасовий файл
                             Storage::disk('local')->delete($fileName);
 
                             \Filament\Notifications\Notification::make()

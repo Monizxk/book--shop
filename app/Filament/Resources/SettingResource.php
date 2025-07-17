@@ -120,7 +120,7 @@ class SettingResource extends Resource
                     ->placeholder('Enter custom setting key'),
 
                 Forms\Components\Group::make([
-                    // Для delivery_cost - числовое поле
+
                     Forms\Components\TextInput::make('value')
                         ->label('Delivery Cost (UAH)')
                         ->numeric()
@@ -129,7 +129,6 @@ class SettingResource extends Resource
                         ->required()
                         ->placeholder('e.g., 250'),
 
-                    // Для working hours labels - текстовое поле
                     Forms\Components\TextInput::make('value')
                         ->label('Day Label')
                         ->visible(fn (callable $get) => in_array($get('key'), [
@@ -140,7 +139,6 @@ class SettingResource extends Resource
                         ->required()
                         ->placeholder('e.g., ПН, ВТ, СР, ЧТ, ПТ'),
 
-                    // Для working hours времени - текстовое поле
                     Forms\Components\TextInput::make('value')
                         ->label('Working Hours')
                         ->visible(fn (callable $get) => in_array($get('key'), [
@@ -151,7 +149,6 @@ class SettingResource extends Resource
                         ->required()
                         ->placeholder('e.g., з 9:00 до 18:00'),
 
-                    // Для enabled настроек - toggle
                     Forms\Components\Toggle::make('value')
                         ->label('Enabled')
                         ->visible(fn (callable $get) => in_array($get('key'), [
@@ -164,7 +161,6 @@ class SettingResource extends Resource
                         ->formatStateUsing(fn ($state) => $state === '1' || $state === true)
                         ->dehydrateStateUsing(fn ($state) => $state ? '1' : '0'),
 
-                    // Для остальных настроек - обычное текстовое поле
                     Forms\Components\TextInput::make('value')
                         ->label('Value')
                         ->visible(fn (callable $get) => !in_array($get('key'), [
