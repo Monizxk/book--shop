@@ -38,8 +38,7 @@ class ProductResource extends Resource
                     ->directory('products')
                     ->image()
                     ->reorderable()
-                    ->preserveFilenames()
-                    ->visibility('private'),
+                    ->preserveFilenames(),
 
                 TextInput::make('price')
                     ->numeric()
@@ -76,12 +75,13 @@ class ProductResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('category_id')->label('id')->searchable(),
+                TextColumn::make('category_id')->label('ID')->searchable(),
                 TextColumn::make('title')->label('Назва')->searchable(),
                 TextColumn::make('price')->label('Ціна')->sortable(),
                 ToggleColumn::make('in_stock')->label('В наявності'),
                 ToggleColumn::make('hidden')->label('Схований'),
                 TextColumn::make('category.name')->label('Категорія')->sortable(),
+                ToggleColumn::make('is_on_sale')->label('Розпродаж'),
                 ToggleColumn::make('is_on_way')->label('Готові до відправки'),
             ])
             ->actions([
@@ -112,7 +112,6 @@ class ProductResource extends Resource
                     ])
                     ->action(function (array $data) {
                         try {
-
                             $fileName = is_array($data['file']) ? $data['file'][0] : $data['file'];
 
                             if (!Storage::disk('local')->exists($fileName)) {

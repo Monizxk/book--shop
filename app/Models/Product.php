@@ -14,7 +14,9 @@ class Product extends Model
     protected $casts = [
         'images' => 'array',
         'in_stock' => 'boolean',
-        'is_on_way' => 'boolean'
+        'is_on_way' => 'boolean',
+        'hidden' => 'boolean',
+        'is_on_sale' => 'boolean',
     ];
 
 

@@ -266,10 +266,16 @@ class OrderResource extends Resource
 
     public function exportPdf(Order $order)
     {
-        $pdf = Pdf::loadView('pdf.order', compact('order'))
-            ->setPaper('a4', 'portrait');
+        try {
+            $pdf = Pdf::loadView('pdf.order', compact('order'))
+                ->setPaper('a4', 'portrait');
 
-        return $pdf->download("order-{$order->id}.pdf");
+            return $pdf->download("order-{$order->id}.pdf");
+
+        } catch (\Exception $e) {
+
+            return response()->json(['error' => 'Помилка генерації PDF'], 500);
+        }
     }
     public static function getRelations(): array
     {
