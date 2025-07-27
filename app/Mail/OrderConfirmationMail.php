@@ -20,8 +20,8 @@ class OrderConfirmationMail extends Mailable
     public function envelope(): Envelope
     {
         $subject = $this->isForSeller
-            ? "Новый заказ #{$this->order->id}"
-            : "Подтверждение заказа #{$this->order->id}";
+            ? "Нове замовлення #{$this->order->id}"
+            : "Підтвердження замовлення #{$this->order->id}";
 
         return new Envelope(
             subject: $subject,

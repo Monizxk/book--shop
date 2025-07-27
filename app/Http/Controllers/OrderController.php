@@ -234,8 +234,19 @@ class OrderController extends Controller
                 'status' => 'required|in:pending,confirmed,processing,shipped,delivered,cancelled'
             ]);
 
-            $order = Order::findOrFail($id);
-            $order->updateStatus($validated['status']);
+            $order = Order::with('items')->findOrFail($id);
+
+            // Check if transition is allowed
+            if (!$order->canTransitionTo($validated['status'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid status transition',
+                    'current_status' => $order->status,
+                    'available_transitions' => $order->getAvailableStatusTransitions()
+                ], 400);
+            }
+
+            $order->updateStatus($validated['status']); // This will automatically send emails
 
             return response()->json([
                 'success' => true,

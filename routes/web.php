@@ -21,3 +21,27 @@ Route::get('/debug-mail', function() {
     ]);
 });
 
+Route::get('/test-status-email', function () {
+    $order = App\Models\Order::with('items')->first();
+
+    if (!$order) {
+        return 'No orders found to test with';
+    }
+
+    try {
+        $results = App\Services\OrderNotificationService::sendStatusUpdate(
+            $order,
+            'pending',
+            'confirmed'
+        );
+
+        return response()->json([
+            'message' => 'Status update emails sent!',
+            'results' => $results,
+            'order_id' => $order->id
+        ]);
+    } catch (\Exception $e) {
+        return 'Error: ' . $e->getMessage();
+    }
+});
+
