@@ -65,6 +65,8 @@ class SettingResource extends Resource
                         'payment_np_cod_note' => 'Payment Nova Poshta COD Note',
                         'payment_np_cod_important' => 'Payment Nova Poshta COD Important',
                         'payment_np_cod_important2' => 'Payment Nova Poshta COD Important 2',
+                        'order_notification_email' => 'Order Notification Email',
+                        'order_notification_enabled' => 'Order Notification Enabled',
                     ])
                     ->searchable()
                     ->allowHtml()
@@ -75,7 +77,7 @@ class SettingResource extends Resource
 
                 Forms\Components\TextInput::make('custom_key')
                     ->label('Custom Key')
-                    ->visible(fn (callable $get) => !in_array($get('key'), [
+                    ->visible(fn (callable $get, $context) => $context === 'create' && !in_array($get('key'), [
                         'delivery_cost',
                         'working_hours.weekdays.label',
                         'working_hours.weekdays.hours',
@@ -111,6 +113,8 @@ class SettingResource extends Resource
                         'payment_np_cod_note',
                         'payment_np_cod_important',
                         'payment_np_cod_important2',
+                            'order_notification_email',
+                            'order_notification_enabled',
                     ]))
                     ->afterStateUpdated(function (callable $set, $state) {
                         if ($state) {

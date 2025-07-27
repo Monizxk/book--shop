@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\OrderItem; // Добавлен импорт
 use App\Models\Product; // Добавлен импорт Product
 use App\Models\Setting;
+use App\Services\OrderNotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -127,13 +128,17 @@ class OrderController extends Controller
             $order->formatted_subtotal = number_format($order->subtotal, 2) . ' ₴';
             $order->formatted_delivery_cost = number_format($order->delivery_cost, 2) . ' ₴';
 
+            // Send order confirmation emails
+            $emailResults = OrderNotificationService::sendOrderConfirmation($order);
+
             Log::info('Order created successfully:', [
                 'order_id' => $order->id,
                 'order_number' => $order->order_number,
                 'delivery_method' => $order->delivery_method,
                 'subtotal' => $order->subtotal,
                 'delivery_cost' => $order->delivery_cost,
-                'total' => $order->total
+                'total' => $order->total,
+                'email_results' => $emailResults
             ]);
 
             return response()->json([
