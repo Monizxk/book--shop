@@ -11,10 +11,8 @@ class BookController extends Controller
     public function search(Request $request)
     {
         $query = $request->get('q');
-        \Log::info('Search request received with query: ' . $query);
 
         if (empty($query)) {
-            \Log::warning('Empty search query');
             return response()->json([
                 'message' => 'Search query is required',
                 'data' => []
@@ -24,10 +22,8 @@ class BookController extends Controller
         try {
             $products = Product::whereRaw('LOWER(title) LIKE ?', ['%' . strtolower($query) . '%'])
                 ->get();
-            \Log::info('Found products: ' . $products->toJson());
             return response()->json($products);
         } catch (\Exception $e) {
-            \Log::error('Search error: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Error searching products',
                 'error' => $e->getMessage()
@@ -39,10 +35,8 @@ class BookController extends Controller
     {
         try {
             $products = Product::all();
-            \Log::info('Fetched all products: ' . $products->toJson());
             return response()->json($products);
         } catch (\Exception $e) {
-            \Log::error('Fetch products error: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Error fetching products',
                 'error' => $e->getMessage()

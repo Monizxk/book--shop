@@ -51,21 +51,17 @@ class Order extends Model
         $date = date('Y-m-d');
         $baseOrderNumber = 'ORD-' . $date;
 
-        // Проверяем, есть ли ордеры за текущую дату
         $existingOrders = self::where('order_number', 'like', $baseOrderNumber . '%')->get();
 
         if ($existingOrders->isEmpty()) {
-            // Если ордеров за эту дату нет, возвращаем базовый номер
             return $baseOrderNumber;
         }
 
-        // Находим максимальный суффикс среди существующих ордеров
         $maxSuffix = $existingOrders->map(function ($order) use ($baseOrderNumber) {
             $suffix = str_replace($baseOrderNumber . '-', '', $order->order_number);
             return is_numeric($suffix) ? (int)$suffix : 0;
         })->max();
 
-        // Формируем следующий номер ордера
         return $baseOrderNumber . '-' . ($maxSuffix + 1);
     }
 

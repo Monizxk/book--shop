@@ -54,7 +54,7 @@ class OrderController extends Controller
     public function exportPdf(Order $order)
     {
         $pdf = Pdf::loadView('pdf.order', ['order' => $order])
-            ->setPaper('a4', 'landscape'); // альбомний формат A4
+            ->setPaper('a4', 'landscape');
 
         return $pdf->download("order-{$order->id}.pdf");
     }
@@ -131,16 +131,6 @@ class OrderController extends Controller
             // Send order confirmation emails
             $emailResults = OrderNotificationService::sendOrderConfirmation($order);
 
-            Log::info('Order created successfully:', [
-                'order_id' => $order->id,
-                'order_number' => $order->order_number,
-                'delivery_method' => $order->delivery_method,
-                'subtotal' => $order->subtotal,
-                'delivery_cost' => $order->delivery_cost,
-                'total' => $order->total,
-                'email_results' => $emailResults
-            ]);
-
             return response()->json([
                 'success' => true,
                 'message' => 'Order created successfully',
@@ -155,7 +145,6 @@ class OrderController extends Controller
             ], 201);
 
         } catch (\Exception $e) {
-            Log::error('Failed to create order: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to create order'
@@ -163,12 +152,6 @@ class OrderController extends Controller
         }
     }
 
-//    private function getDeliveryCostValue()
-//    {
-//        $cost = Setting::getValue('delivery_cost', 250);
-//        Log::info('Delivery cost from settings: ' . $cost);
-//        return (float) $cost;
-//    }
     /**
      * Display the specified order.
      */
@@ -179,12 +162,10 @@ class OrderController extends Controller
                 $query->with('product');
             }])->findOrFail($id);
 
-            // Add formatted totals
             $order->formatted_total = number_format($order->total, 2) . ' ₴';
             $order->formatted_subtotal = number_format($order->subtotal, 2) . ' ₴';
             $order->formatted_delivery_cost = number_format($order->delivery_cost, 2) . ' ₴';
 
-            // Transform items to include formatted data
             $order->items = $order->items->map(function ($item) {
                 return [
                     'id' => $item->id,
@@ -214,7 +195,6 @@ class OrderController extends Controller
                 'message' => 'Order not found'
             ], 404);
         } catch (\Exception $e) {
-            Log::error('Failed to fetch order: ' . $e->getMessage());
 
             return response()->json([
                 'success' => false,
@@ -246,7 +226,7 @@ class OrderController extends Controller
                 ], 400);
             }
 
-            $order->updateStatus($validated['status']); // This will automatically send emails
+            $order->updateStatus($validated['status']);
 
             return response()->json([
                 'success' => true,

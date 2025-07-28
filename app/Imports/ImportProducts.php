@@ -24,13 +24,10 @@ class ImportProducts implements ToModel, WithHeadingRow, WithValidation, WithBat
 
     public function model(array $row)
     {
-        // Обробка назви продукту
         $title = trim($row['назва'] ?? $row['title'] ?? '');
 
-        // Обробка ціни
         $price = $this->parsePrice($row['ціна'] ?? $row['price'] ?? 0);
 
-        // Визначення категорії
         $categoryId = $this->determineCategoryId($title);
 
         return new Product([
@@ -46,10 +43,8 @@ class ImportProducts implements ToModel, WithHeadingRow, WithValidation, WithBat
 
     private function parsePrice($priceValue)
     {
-        // Видаляємо всі символи крім цифр і крапки/коми
         $price = preg_replace('/[^\d.,]/', '', $priceValue);
 
-        // Замінюємо кому на крапку
         $price = str_replace(',', '.', $price);
 
         return floatval($price);
@@ -57,15 +52,12 @@ class ImportProducts implements ToModel, WithHeadingRow, WithValidation, WithBat
 
     private function determineCategoryId($title)
     {
-        // Якщо передано дефолтну категорію, використовуємо її
         if ($this->defaultCategoryId) {
             return $this->defaultCategoryId;
         }
 
-        // Логіка автоматичного визначення категорії на основі назви
         $title = strtolower($title);
 
-        // Пошук категорії по ключовим словам
         $categoryMappings = [
             'academy' => 'Academy Stars',
             'english' => 'English',
@@ -81,7 +73,6 @@ class ImportProducts implements ToModel, WithHeadingRow, WithValidation, WithBat
             }
         }
 
-        // Якщо категорія не знайдена, створюємо дефолтну
         $defaultCategory = Category::firstOrCreate(['name' => 'Загальне']);
         return $defaultCategory->id;
     }

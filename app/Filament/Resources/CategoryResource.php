@@ -38,7 +38,6 @@ class CategoryResource extends Resource
                     ->nullable()
                     ->reactive()
                     ->afterStateUpdated(function (Forms\Set $set, $state) {
-                        // Проверяем, может ли выбранная родительская категория иметь детей
                         if ($state) {
                             $parent = Category::find($state);
                             if ($parent && !$parent->canHaveChildren()) {
@@ -88,21 +87,6 @@ class CategoryResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->placeholder('—'),
-//                Tables\Columns\TextColumn::make('children_count')
-//                    ->label('Subcategories')
-//                    ->counts('children')
-//                    ->badge()
-//                    ->color('info'),
-//                Tables\Columns\IconColumn::make('can_have_children')
-//                    ->label('Can Add Children')
-//                    ->getStateUsing(function (Category $record): bool {
-//                        return $record->canHaveChildren();
-//                    })
-//                    ->boolean()
-//                    ->trueIcon('heroicon-o-check-circle')
-//                    ->falseIcon('heroicon-o-x-circle')
-//                    ->trueColor('success')
-//                    ->falseColor('danger'),
                 Tables\Columns\ToggleColumn::make('hidden')
                     ->label('Схований')
                     ->onIcon('heroicon-o-eye-slash')
@@ -191,7 +175,7 @@ class CategoryResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\BulkAction::make('hide')
-                        ->label('Hide Selected')
+                        ->label('Сховати вибрані')
                         ->icon('heroicon-o-eye-slash')
                         ->color('warning')
                         ->action(function ($records) {
@@ -200,10 +184,11 @@ class CategoryResource extends Resource
                             }
                         })
                         ->requiresConfirmation()
-                        ->modalHeading('Hide Categories')
-                        ->modalDescription('Are you sure you want to hide the selected categories?'),
+                        ->modalHeading('Сховати категорії')
+                        ->modalDescription('Ви впевнені, що хочете сховати вибрані категорії?'),
+
                     Tables\Actions\BulkAction::make('show')
-                        ->label('Show Selected')
+                        ->label('Показати вибрані')
                         ->icon('heroicon-o-eye')
                         ->color('success')
                         ->action(function ($records) {
@@ -212,13 +197,14 @@ class CategoryResource extends Resource
                             }
                         })
                         ->requiresConfirmation()
-                        ->modalHeading('Show Categories')
-                        ->modalDescription('Are you sure you want to show the selected categories?'),
+                        ->modalHeading('Показати категорії')
+                        ->modalDescription('Ви впевнені, що хочете показати вибрані категорії?'),
+
                     Tables\Actions\DeleteBulkAction::make()
                         ->before(function ($records) {
                             foreach ($records as $record) {
                                 if ($record->children()->count() > 0) {
-                                    throw new \Exception("Cannot delete category '{$record->name}' with subcategories.");
+                                    throw new \Exception("Неможливо видалити категорію '{$record->name}', оскільки вона містить підкатегорії.");
                                 }
                             }
                         }),
