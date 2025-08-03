@@ -8,23 +8,51 @@ use App\Http\Controllers\Controller;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return Product::where('hidden', false)->get(); // Повертаємо только не скрытые продукты
+        $perPage = $request->get('per_page', 10);
+        $paginated = Product::where('hidden', false)->paginate($perPage);
+        
+        return response()->json([
+            'products' => $paginated->items(),
+            'current_page' => $paginated->currentPage(),
+            'last_page' => $paginated->lastPage(),
+            'per_page' => $paginated->perPage(),
+            'total' => $paginated->total()
+        ]);
     }
 
     public function show($id)
     {
         return Product::where('id', $id)->where('hidden', false)->firstOrFail(); // Только не скрытый продукт
     }
-    public function sale()
+    
+    public function sale(Request $request)
     {
-        $products = Product::where('is_on_sale', true)->where('hidden', false)->get();
-        return response()->json($products);
+        $perPage = $request->get('per_page', 10);
+        $paginated = Product::where('is_on_sale', true)->where('hidden', false)->paginate($perPage);
+        
+        return response()->json([
+            'products' => $paginated->items(),
+            'current_page' => $paginated->currentPage(),
+            'last_page' => $paginated->lastPage(),
+            'per_page' => $paginated->perPage(),
+            'total' => $paginated->total()
+        ]);
     }
-    public function wayProducts()
+    
+    public function wayProducts(Request $request)
     {
-        return Product::where('is_on_way', true)->where('hidden', false)->get();
+        $perPage = $request->get('per_page', 10);
+        $paginated = Product::where('is_on_way', true)->where('hidden', false)->paginate($perPage);
+        
+        return response()->json([
+            'products' => $paginated->items(),
+            'current_page' => $paginated->currentPage(),
+            'last_page' => $paginated->lastPage(),
+            'per_page' => $paginated->perPage(),
+            'total' => $paginated->total()
+        ]);
     }
 }
 

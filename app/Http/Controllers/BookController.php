@@ -11,6 +11,8 @@ class BookController extends Controller
     public function search(Request $request)
     {
         $query = $request->get('q');
+        $perPage = $request->get('per_page', 10);
+        $page = $request->get('page', 1);
 
         if (empty($query)) {
             return response()->json([
@@ -20,9 +22,16 @@ class BookController extends Controller
         }
 
         try {
-            $products = Product::whereRaw('LOWER(title) LIKE ?', ['%' . strtolower($query) . '%'])
-                ->get();
-            return response()->json($products);
+            $paginated = Product::whereRaw('LOWER(title) LIKE ?', ['%' . strtolower($query) . '%'])
+                ->paginate($perPage, ['*'], 'page', $page);
+            
+            return response()->json([
+                'products' => $paginated->items(),
+                'current_page' => $paginated->currentPage(),
+                'last_page' => $paginated->lastPage(),
+                'per_page' => $paginated->perPage(),
+                'total' => $paginated->total()
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error searching products',
@@ -31,11 +40,19 @@ class BookController extends Controller
         }
     }
 
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $products = Product::all();
-            return response()->json($products);
+            $perPage = $request->get('per_page', 10);
+            $paginated = Product::paginate($perPage);
+            
+            return response()->json([
+                'products' => $paginated->items(),
+                'current_page' => $paginated->currentPage(),
+                'last_page' => $paginated->lastPage(),
+                'per_page' => $paginated->perPage(),
+                'total' => $paginated->total()
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error fetching products',
