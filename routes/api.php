@@ -18,6 +18,7 @@ Route::prefix('categories')->group(function () {
     Route::get('/stats', [CategoryController::class, 'getStats']);
     Route::get('/search', [CategoryController::class, 'search']);
 });
+Route::get('/categories/{categoryId}/products', [ProductController::class, 'getByCategory']);
 
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/search', [BookController::class, 'search']);
@@ -32,5 +33,7 @@ Route::get('/products/{id}', [ProductController::class, 'show']);
 Route::get('/settings/contacts', [SettingsController::class, 'getContacts']);
 Route::get('/settings/delivery', [SettingsController::class, 'getDeliveryTexts']);
 Route::get('/settings/payment', [SettingsController::class, 'getPaymentTexts']);
+Route::get('/products/search', [ProductController::class, 'search']);
+
 
 Route::get('/pdf/orders/{order}', [OrderController::class, 'exportPdf'])->name('orders.pdf');

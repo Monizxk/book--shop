@@ -22,9 +22,10 @@ class BookController extends Controller
         }
 
         try {
-            $paginated = Product::whereRaw('LOWER(title) LIKE ?', ['%' . strtolower($query) . '%'])
+            $paginated = Product::with('category')
+            ->whereRaw('LOWER(title) LIKE ?', ['%' . strtolower($query) . '%'])
                 ->paginate($perPage, ['*'], 'page', $page);
-            
+
             return response()->json([
                 'products' => $paginated->items(),
                 'current_page' => $paginated->currentPage(),
@@ -44,8 +45,9 @@ class BookController extends Controller
     {
         try {
             $perPage = $request->get('per_page', 10);
-            $paginated = Product::paginate($perPage);
-            
+            $paginated = Product::with('category')
+            ->paginate($perPage);
+
             return response()->json([
                 'products' => $paginated->items(),
                 'current_page' => $paginated->currentPage(),
