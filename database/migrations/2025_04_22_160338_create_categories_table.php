@@ -17,15 +17,9 @@ return new class extends Migration
             $table->unsignedBigInteger('parent_id')->nullable();
             $table->timestamps();
             $table->boolean('hidden')->default(false);
-
-            // Внешний ключ для родительской категории
             $table->foreign('parent_id')->references('id')->on('categories')->onDelete('cascade');
-
-            // Индексы для быстрого поиска
             $table->index('parent_id');
             $table->index('name');
-
-            // Составной индекс для быстрого поиска по родителю и имени
             $table->index(['parent_id', 'name']);
         });
     }
